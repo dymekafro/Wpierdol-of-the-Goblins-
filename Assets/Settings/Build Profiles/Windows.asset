@@ -18,20 +18,17 @@ MonoBehaviour:
   m_PlatformId: 4e3c793746204150860bf175a9a41a05
   m_PlatformBuildProfile:
     rid: 3517729521432789010
-  m_OverrideGlobalSceneList: 1
+  m_OverrideGlobalSceneList: 0
   m_Scenes:
   - m_enabled: 1
     m_path: Assets/_Game/Scenes/MainMenu.unity
-    m_guid: dfb2fdaf445423d4c96711304766505c
+    m_guid: b4570a7e74fdcd1be52fa4b5048c5764
   - m_enabled: 1
-    m_path: Assets/_Game/Scenes/CharacterSelection.unity
-    m_guid: 88ab4020a12aed143ac221208331d7b5
-  - m_enabled: 1
-    m_path: Assets/_Game/Scenes/AttributeAllocation.unity
-    m_guid: 7a5687e6cc1d48e4eb3a56fce08259ce
+    m_path: Assets/_Game/Scenes/CharacterCreation.unity
+    m_guid: ac4305661fdb39655b07ad0013245ac1
   - m_enabled: 1
     m_path: Assets/_Game/Scenes/World.unity
-    m_guid: 0deba6c41f1f42e4ab681f502fba5061
+    m_guid: 4d6a6a6cdc9be90e3f77b4fb22ccf737
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
