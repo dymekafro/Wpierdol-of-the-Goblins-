@@ -1,61 +1,80 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using WPG.Core;
 
-public class ThirdPersonCamera : MonoBehaviour
+namespace WPG.Player
 {
-    public Transform target;
-
-    [Header("Camera Settings")]
-    public float distance = 5f;
-    public float pivotHeight = 1.5f;
-    public float mouseSensitivity = 150f;
-    public float minPitch = -25f;
-    public float maxPitch = 60f;
-    public float smoothSpeed = 12f;
-
-    private float pitch = 15f;
-
-    private void LateUpdate()
+    // Klasyczna kamera 3rd person za plecami z mouse look (yaw/pitch).
+    public class ThirdPersonCamera : MonoBehaviour
     {
-        if (target == null)
+        public Transform target;
+        public float distance = 5.5f;
+        public float height = 2.2f;
+        // Bazowa czułość; mnożona przez SettingsManager.MouseSensitivity (1.0 = neutralne).
+        public float mouseSensitivity = 180f;
+        public float pitchMin = -25f;
+        public float pitchMax = 60f;
+        public float followSmooth = 12f;
+
+        public float Yaw { get; private set; }
+        public float Pitch { get; private set; } = 15f;
+
+        private void LateUpdate()
         {
-            return;
+            if (target == null) return;
+
+            if (Mouse.current != null && Cursor.lockState == CursorLockMode.Locked)
+            {
+                Vector2 delta = Mouse.current.delta.ReadValue();
+                float sensMul = 1f;
+                bool invertY = false;
+                if (SettingsManager.Instance != null)
+                {
+                    sensMul = SettingsManager.Instance.MouseSensitivity;
+                    invertY = SettingsManager.Instance.InvertY;
+                }
+                Yaw += delta.x * mouseSensitivity * sensMul * Time.unscaledDeltaTime * 0.05f;
+                float pitchDelta = delta.y * mouseSensitivity * sensMul * Time.unscaledDeltaTime * 0.05f;
+                Pitch += (invertY ? pitchDelta : -pitchDelta);
+                Pitch = Mathf.Clamp(Pitch, pitchMin, pitchMax);
+            }
+
+            Quaternion rotation = Quaternion.Euler(Pitch, Yaw, 0f);
+            Vector3 desiredPos = target.position + Vector3.up * height - rotation * Vector3.forward * distance;
+
+            // Raycast omijający kolizje gracza
+            RaycastHit[] hits = Physics.RaycastAll(target.position + Vector3.up * height,
+                (desiredPos - (target.position + Vector3.up * height)).normalized,
+                Vector3.Distance(target.position + Vector3.up * height, desiredPos));
+            float closestDist = float.MaxValue;
+            Vector3 closestPoint = desiredPos;
+            Vector3 closestNormal = Vector3.zero;
+            bool blocked = false;
+            foreach (var hit in hits)
+            {
+                if (hit.collider == null) continue;
+                if (hit.collider.isTrigger) continue;
+                // pomiń gracza i jego dzieci
+                if (hit.collider.transform == target || hit.collider.transform.IsChildOf(target)) continue;
+                if (hit.distance < closestDist)
+                {
+                    closestDist = hit.distance;
+                    closestPoint = hit.point;
+                    closestNormal = hit.normal;
+                    blocked = true;
+                }
+            }
+            if (blocked) desiredPos = closestPoint + closestNormal * 0.2f;
+
+            transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * followSmooth);
+            transform.rotation = rotation;
         }
 
-        if (GameStateManager.Instance != null && !GameStateManager.Instance.IsGameplay())
+        public Vector3 GetCameraForwardFlat()
         {
-            UpdateCameraPosition(false);
-            return;
+            Vector3 fwd = transform.forward;
+            fwd.y = 0f;
+            return fwd.sqrMagnitude < 0.001f ? Vector3.forward : fwd.normalized;
         }
-
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        pitch -= mouseY;
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
-
-        UpdateCameraPosition(true);
-    }
-
-    private void UpdateCameraPosition(bool smooth)
-    {
-        Vector3 pivotPoint = target.position + Vector3.up * pivotHeight;
-
-        Quaternion cameraRotation = Quaternion.Euler(pitch, target.eulerAngles.y, 0f);
-
-        Vector3 desiredPosition = pivotPoint - cameraRotation * Vector3.forward * distance;
-
-        if (smooth)
-        {
-            transform.position = Vector3.Lerp(
-                transform.position,
-                desiredPosition,
-                smoothSpeed * Time.deltaTime
-            );
-        }
-        else
-        {
-            transform.position = desiredPosition;
-        }
-
-        transform.rotation = cameraRotation;
     }
 }

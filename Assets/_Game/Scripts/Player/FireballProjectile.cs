@@ -1,54 +1,76 @@
 using UnityEngine;
+using WPG.Core;
+using WPG.World;
 
-public class FireballProjectile : MonoBehaviour
+namespace WPG.Player
 {
-    [Header("Movement")]
-    [SerializeField] private float speed = 9f;
-    [SerializeField] private float lifetime = 3f;
-
-    [Header("Combat")]
-    [SerializeField] private int damage = 15;
-    [SerializeField] private LayerMask enemyLayers;
-
-    private Vector3 direction;
-    private bool initialized;
-
-    public void Initialize(Vector3 moveDirection, int fireballDamage, LayerMask targetLayers)
+    public class FireballProjectile : MonoBehaviour
     {
-        direction = moveDirection.normalized;
-        damage = fireballDamage;
-        enemyLayers = targetLayers;
-        initialized = true;
+        public float speed = 18f;
+        public float lifetime = 4f;
+        public int damage = 30;
+        public float impactRadius = 1.5f;
+        public LayerMask hitMask = ~0;
 
-        Destroy(gameObject, lifetime);
-    }
+        private Vector3 _direction;
+        private float _born;
+        private GameObject _owner;
 
-    private void Update()
-    {
-        if (!initialized)
-            return;
-
-        transform.position += direction * speed * Time.deltaTime;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (((1 << other.gameObject.layer) & enemyLayers) == 0)
-            return;
-
-        Enemy enemy = other.GetComponent<Enemy>();
-
-        if (enemy == null)
-            enemy = other.GetComponentInParent<Enemy>();
-
-        if (enemy != null)
+        public void Fire(Vector3 dir, int dmg, GameObject owner)
         {
-            Vector3 hitDirection = other.transform.position - transform.position;
-            hitDirection.y = 0f;
-
-            enemy.TakeDamage(damage, hitDirection);
+            _direction = dir.normalized;
+            damage = dmg;
+            _born = Time.time;
+            _owner = owner;
+            transform.forward = _direction;
         }
 
-        Destroy(gameObject);
+        private void Update()
+        {
+            transform.position += _direction * speed * Time.deltaTime;
+            if (Time.time - _born > lifetime)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            // Hit detection - sphere overlap each frame
+            Collider[] hits = Physics.OverlapSphere(transform.position, 0.6f, hitMask, QueryTriggerInteraction.Ignore);
+            foreach (var h in hits)
+            {
+                if (h.gameObject == _owner) continue;
+                if (h.transform.IsChildOf(_owner.transform)) continue;
+
+                var dmgr = h.GetComponentInParent<IDamageReceiver>();
+                if (dmgr != null)
+                {
+                    Explode();
+                    return;
+                }
+
+                // Hit środowiska
+                if (!h.isTrigger)
+                {
+                    Explode();
+                    return;
+                }
+            }
+        }
+
+        private void Explode()
+        {
+            Collider[] all = Physics.OverlapSphere(transform.position, impactRadius, hitMask, QueryTriggerInteraction.Ignore);
+            foreach (var c in all)
+            {
+                if (c.gameObject == _owner) continue;
+                var dmgr = c.GetComponentInParent<IDamageReceiver>();
+                if (dmgr != null)
+                {
+                    dmgr.ReceiveDamage(damage, transform.position);
+                }
+            }
+
+            Destroy(gameObject);
+        }
     }
 }
