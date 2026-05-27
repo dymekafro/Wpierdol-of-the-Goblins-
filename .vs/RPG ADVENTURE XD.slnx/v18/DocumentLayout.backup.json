@@ -1,0 +1,171 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\sledz\\RPG ADVENTURE XD\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\inventory\\equipmentmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\inventory\\equipmentmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\loot\\chest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\loot\\chest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\player\\playercontroller3d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\player\\playercontroller3d.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\core\\gamestatemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\core\\gamestatemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\core\\gamestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\core\\gamestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\items\\itemdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\items\\itemdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\items\\itemtype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\items\\itemtype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\charactercreation\\attributeallocationmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\charactercreation\\attributeallocationmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\charactercreation\\characterselectionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\charactercreation\\characterselectionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EquipmentManager.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Inventory\\EquipmentManager.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Inventory\\EquipmentManager.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Inventory\\EquipmentManager.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Inventory\\EquipmentManager.cs",
+              "ViewState": "AgIAADEAAAAAAAAAAAAkwE4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T17:48:47.167Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Chest.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Loot\\Chest.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Loot\\Chest.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Loot\\Chest.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Loot\\Chest.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAAACQAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T16:17:20.295Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "GameStateManager.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameStateManager.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Core\\GameStateManager.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameStateManager.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Core\\GameStateManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T17:17:03.054Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "GameState.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameState.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Core\\GameState.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameState.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Core\\GameState.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T17:16:17.155Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PlayerController3D.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerController3D.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Player\\PlayerController3D.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerController3D.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Player\\PlayerController3D.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAQwEMAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T15:44:01.442Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ItemData.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Items\\ItemData.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Items\\ItemData.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Items\\ItemData.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Items\\ItemData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T16:12:26.504Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ItemType.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Items\\ItemType.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Items\\ItemType.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Items\\ItemType.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Items\\ItemType.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T16:11:36.844Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AttributeAllocationManager.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\CharacterCreation\\AttributeAllocationManager.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\CharacterCreation\\AttributeAllocationManager.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\CharacterCreation\\AttributeAllocationManager.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\CharacterCreation\\AttributeAllocationManager.cs",
+              "ViewState": "AgIAAFMAAAAAAAAAAAAAAFQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T15:32:52.497Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CharacterSelectionManager.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\CharacterCreation\\CharacterSelectionManager.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\CharacterCreation\\CharacterSelectionManager.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\CharacterCreation\\CharacterSelectionManager.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\CharacterCreation\\CharacterSelectionManager.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAgwBUAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-17T15:06:56.186Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
