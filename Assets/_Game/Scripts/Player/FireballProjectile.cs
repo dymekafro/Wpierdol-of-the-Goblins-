@@ -59,6 +59,8 @@ namespace WPG.Player
 
         private void Explode()
         {
+            WorldAssetPlacer.TrySpawnVfx(WorldAssetPlacer.VfxKind.FireballImpact, transform.position, Quaternion.identity, 3f);
+
             Collider[] all = Physics.OverlapSphere(transform.position, impactRadius, hitMask, QueryTriggerInteraction.Ignore);
             foreach (var c in all)
             {

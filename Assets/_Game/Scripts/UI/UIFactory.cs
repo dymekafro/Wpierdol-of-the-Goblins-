@@ -2,12 +2,14 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using WPG.Core;
 
 namespace WPG.UI
 {
     public static class UIFactory
     {
         private static Font _font;
+        private static Sprite _defaultSprite;
 
         public static Font GetFont()
         {
@@ -19,6 +21,31 @@ namespace WPG.UI
                 _font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             }
             return _font;
+        }
+
+        public static Sprite GetDefaultSprite()
+        {
+            if (_defaultSprite != null) return _defaultSprite;
+            _defaultSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            return _defaultSprite;
+        }
+
+        public static Image CreateImage(Transform parent, Sprite sprite, Color tint, Vector2 anchorMin, Vector2 anchorMax,
+            Vector2 offsetMin, Vector2 offsetMax, string name = "Image", Image.Type type = Image.Type.Simple)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = offsetMin;
+            rt.offsetMax = offsetMax;
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite != null ? sprite : GetDefaultSprite();
+            img.type = type;
+            img.color = tint;
+            img.raycastTarget = false;
+            return img;
         }
 
         public static Canvas CreateScreenCanvas(string name, int sortOrder = 0)
@@ -105,7 +132,14 @@ namespace WPG.UI
             btn.colors = colors;
             btn.targetGraphic = img;
 
-            if (onClick != null) btn.onClick.AddListener(() => onClick());
+            if (onClick != null)
+            {
+                btn.onClick.AddListener(() =>
+                {
+                    GameAudioManager.EnsureExists()?.PlayUIClick();
+                    onClick();
+                });
+            }
 
             var labelGO = new GameObject("Label");
             labelGO.transform.SetParent(go.transform, false);
@@ -300,6 +334,14 @@ namespace WPG.UI
         public static RectTransform CreateBar(Transform parent, Color bg, Color fill,
             Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, string name = "Bar")
         {
+            return CreateBar(parent, bg, fill, null, null, anchorMin, anchorMax, offsetMin, offsetMax, name);
+        }
+
+        // Bar z opcjonalnymi sprite'ami Fantasy Free GUI (fallback: kolory).
+        public static RectTransform CreateBar(Transform parent, Color bg, Color fill,
+            Sprite bgSprite, Sprite fillSprite,
+            Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, string name = "Bar")
+        {
             var root = new GameObject(name);
             root.transform.SetParent(parent, false);
             var rt = root.AddComponent<RectTransform>();
@@ -308,7 +350,9 @@ namespace WPG.UI
             rt.offsetMin = offsetMin;
             rt.offsetMax = offsetMax;
             var bgImg = root.AddComponent<Image>();
-            bgImg.color = bg;
+            bgImg.sprite = bgSprite != null ? bgSprite : GetDefaultSprite();
+            bgImg.type = bgSprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            bgImg.color = bgSprite != null ? Color.white : bg;
             bgImg.raycastTarget = false;
 
             var fillRoot = new GameObject("Fill");
@@ -320,10 +364,73 @@ namespace WPG.UI
             fillRT.offsetMin = new Vector2(3f, 3f);
             fillRT.offsetMax = new Vector2(-3f, -3f);
             var fillImg = fillRoot.AddComponent<Image>();
-            fillImg.color = fill;
+            fillImg.sprite = fillSprite != null ? fillSprite : GetDefaultSprite();
+            fillImg.type = fillSprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            fillImg.color = fillSprite != null ? Color.white : fill;
             fillImg.raycastTarget = false;
 
             return fillRT;
+        }
+
+        public static Button CreateFantasyButton(Transform parent, string text, Action onClick,
+            Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax,
+            Color fallbackBase, Color fallbackHover, int fontSize = 36)
+        {
+            var btnSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiButton, GameAssetPaths.ResUiButton);
+            if (btnSprite == null)
+            {
+                return CreateButton(parent, text, fallbackBase, fallbackHover, onClick,
+                    anchorMin, anchorMax, offsetMin, offsetMax, fontSize);
+            }
+
+            var go = new GameObject("Button_" + text);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = offsetMin;
+            rt.offsetMax = offsetMax;
+
+            var img = go.AddComponent<Image>();
+            img.sprite = btnSprite;
+            img.type = Image.Type.Sliced;
+            img.color = Color.white;
+
+            var btn = go.AddComponent<Button>();
+            var colors = btn.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(1f, 1f, 0.92f, 1f);
+            colors.pressedColor = new Color(0.75f, 0.75f, 0.7f, 1f);
+            colors.selectedColor = colors.highlightedColor;
+            colors.fadeDuration = 0.08f;
+            btn.colors = colors;
+            btn.targetGraphic = img;
+
+            if (onClick != null)
+            {
+                btn.onClick.AddListener(() =>
+                {
+                    GameAudioManager.EnsureExists()?.PlayUIClick();
+                    onClick();
+                });
+            }
+
+            var labelGO = new GameObject("Label");
+            labelGO.transform.SetParent(go.transform, false);
+            var labelRT = labelGO.AddComponent<RectTransform>();
+            labelRT.anchorMin = Vector2.zero;
+            labelRT.anchorMax = Vector2.one;
+            labelRT.offsetMin = Vector2.zero;
+            labelRT.offsetMax = Vector2.zero;
+            var label = labelGO.AddComponent<Text>();
+            label.text = text;
+            label.font = GetFont();
+            label.fontSize = fontSize;
+            label.color = new Color(0.95f, 0.96f, 0.9f);
+            label.alignment = TextAnchor.MiddleCenter;
+            label.raycastTarget = false;
+
+            return btn;
         }
     }
 

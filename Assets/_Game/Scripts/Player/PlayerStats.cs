@@ -46,6 +46,7 @@ namespace WPG.Player
         public void TakeDamage(int amount)
         {
             if (IsDead) return;
+            GameAudioManager.EnsureExists()?.PlayHit(transform.position);
             currentHealth -= amount;
             if (currentHealth <= 0)
             {
@@ -94,6 +95,17 @@ namespace WPG.Player
             // gdy jest aktywny. Tymczasowo wyłączamy.
             var cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
+
+            // Invector używa Rigidbody — trzeba wyzerować velocity i przenieść MovePosition,
+            // inaczej fizyka rozjedzie postać po teleportacji.
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.position = position;
+            }
+
             transform.position = position;
             if (cc != null) cc.enabled = true;
             FullRestore();

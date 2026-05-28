@@ -24,6 +24,15 @@ namespace WPG.UI
         // Cooldown squares
         private Image _meleeIcon, _fireIcon, _healIcon;
 
+        // GUI sprites (Fantasy Free GUI + Modern RPG icons)
+        private Sprite _barBgSprite;
+        private Sprite _barHpSprite;
+        private Sprite _barManaSprite;
+        private Sprite _iconFrameSprite;
+        private Sprite _iconMeleeSprite;
+        private Sprite _iconFireSprite;
+        private Sprite _iconHealSprite;
+
         // Death screen
         private GameObject _deathRoot;
         private Text _deathText;
@@ -32,6 +41,7 @@ namespace WPG.UI
 
         private void Awake()
         {
+            LoadGuiAssets();
             UIFactory.EnsureEventSystem();
             _canvas = UIFactory.CreateScreenCanvas("Canvas_HUD", 5);
             BuildHUD();
@@ -104,12 +114,24 @@ namespace WPG.UI
             }
         }
 
+        private void LoadGuiAssets()
+        {
+            _barBgSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiBarBackground, GameAssetPaths.ResUiBarBg);
+            _barHpSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiBarFillHp, GameAssetPaths.ResUiBarHp);
+            _barManaSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiBarFillMana, GameAssetPaths.ResUiBarMana);
+            _iconFrameSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiIconFrame, GameAssetPaths.ResUiIconFrame);
+            _iconMeleeSprite = GameAssetLoader.LoadSprite(GameAssetPaths.IconMelee, GameAssetPaths.ResIconMelee);
+            _iconFireSprite = GameAssetLoader.LoadSprite(GameAssetPaths.IconFireball, GameAssetPaths.ResIconFire);
+            _iconHealSprite = GameAssetLoader.LoadSprite(GameAssetPaths.IconHeal, GameAssetPaths.ResIconHeal);
+        }
+
         private void BuildHUD()
         {
             // HP bar - lewy górny
             _hpFill = UIFactory.CreateBar(_canvas.transform,
                 new Color(0.1f, 0.05f, 0.05f, 0.85f),
                 new Color(0.9f, 0.2f, 0.2f, 1f),
+                _barBgSprite, _barHpSprite,
                 new Vector2(0f, 1f), new Vector2(0f, 1f),
                 new Vector2(30, -65), new Vector2(430, -25),
                 "HP_Bar");
@@ -123,6 +145,7 @@ namespace WPG.UI
             _manaFill = UIFactory.CreateBar(_canvas.transform,
                 new Color(0.05f, 0.05f, 0.12f, 0.85f),
                 new Color(0.25f, 0.55f, 1f, 1f),
+                _barBgSprite, _barManaSprite,
                 new Vector2(0f, 1f), new Vector2(0f, 1f),
                 new Vector2(30, -140), new Vector2(430, -100),
                 "Mana_Bar");
@@ -157,22 +180,36 @@ namespace WPG.UI
 
             // Cooldown icons - prawy dół
             float baseX = -260f;
-            _meleeIcon = MakeCooldownIcon("Atak (LPM)", baseX, new Color(0.7f, 0.4f, 0.2f));
+            _meleeIcon = MakeCooldownIcon("Atak (LPM)", baseX, new Color(0.7f, 0.4f, 0.2f), _iconMeleeSprite);
             baseX += 110f;
-            _fireIcon = MakeCooldownIcon("Ognisty Cios (E)", baseX, new Color(1f, 0.5f, 0.1f));
+            _fireIcon = MakeCooldownIcon("Ognisty Cios (E)", baseX, new Color(1f, 0.5f, 0.1f), _iconFireSprite);
             baseX += 110f;
-            _healIcon = MakeCooldownIcon("Leczenie (Q)", baseX, new Color(0.3f, 1f, 0.5f));
+            _healIcon = MakeCooldownIcon("Leczenie (Q)", baseX, new Color(0.3f, 1f, 0.5f), _iconHealSprite);
 
             BuildDeathScreen();
         }
 
-        private Image MakeCooldownIcon(string label, float xOffset, Color color)
+        private Image MakeCooldownIcon(string label, float xOffset, Color fallbackColor, Sprite skillIcon)
         {
             var holder = UIFactory.CreatePanel(_canvas.transform,
                 new Color(0.05f, 0.05f, 0.05f, 0.9f),
                 new Vector2(1f, 0f), new Vector2(1f, 0f),
                 new Vector2(xOffset, 30), new Vector2(xOffset + 100, 130),
                 "Cool_" + label);
+
+            if (_iconFrameSprite != null)
+            {
+                var frame = UIFactory.CreateImage(holder, _iconFrameSprite, Color.white,
+                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "Frame", Image.Type.Sliced);
+                frame.raycastTarget = false;
+            }
+
+            if (skillIcon != null)
+            {
+                UIFactory.CreateImage(holder, skillIcon, Color.white,
+                    new Vector2(0.12f, 0.22f), new Vector2(0.88f, 0.88f),
+                    Vector2.zero, Vector2.zero, "SkillIcon");
+            }
 
             var fillGO = new GameObject("Fill");
             fillGO.transform.SetParent(holder, false);
@@ -182,7 +219,7 @@ namespace WPG.UI
             fillRT.offsetMin = new Vector2(4, 4);
             fillRT.offsetMax = new Vector2(-4, -4);
             var img = fillGO.AddComponent<Image>();
-            img.color = color;
+            img.color = skillIcon != null ? new Color(0f, 0f, 0f, 0.55f) : fallbackColor;
             img.type = Image.Type.Filled;
             img.fillMethod = Image.FillMethod.Radial360;
             img.fillOrigin = (int)Image.Origin360.Top;
@@ -226,6 +263,7 @@ namespace WPG.UI
         private void OnPlayerDied()
         {
             if (_deathRoot != null) _deathRoot.SetActive(true);
+            GameAudioManager.EnsureExists()?.PlayDeath();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }

@@ -1,0 +1,10 @@
+Opcjonalny fallback dla buildów (Resources.Load).
+
+UI sprites → Resources/UI/
+  panel, button, bar_background, bar_red, bar_blue, icon_frame, menu_background
+  icon_sword, icon_fire, icon_heal
+
+Audio clips → Resources/Audio/
+  hit, death, ui_click, fireball, footstep
+
+Pełna lista ścieżek Asset Store: Assets/_Game/Scripts/Core/GameAssetPaths.cs

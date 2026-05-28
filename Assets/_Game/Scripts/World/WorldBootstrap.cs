@@ -1,3 +1,4 @@
+using Invector.vCharacterController;
 using UnityEngine;
 using WPG.Character;
 using WPG.Core;
@@ -9,32 +10,42 @@ namespace WPG.World
 {
     public class WorldBootstrap : MonoBehaviour
     {
+        // Pełna integracja Invector Third Person Controller LITE — gdy true (default),
+        // gracz spawnuje się z prefabu ThirdPersonController_LITE i używa vThirdPersonCamera.
+        // Fallback: stary CharacterController-based PlayerBuilder z WPG ThirdPersonCamera.
+        public bool useInvectorLocomotion = true;
+
         private WorldGenerator _generator;
         private GameObject _player;
-        private ThirdPersonCamera _cam;
         private PlayerStats _stats;
         private PlayerHUD _hud;
         private PauseMenu _pause;
         private Camera _mainCamera;
         private DruidBase _base;
 
+        // Wybrany kamerowy adapter (Invector LUB WPG legacy).
+        private vThirdPersonCamera _invectorCamera;
+        private ThirdPersonCamera _wpgCamera;
+
         private void Awake()
         {
             GameManager.EnsureExists();
+            SettingsManager.EnsureExists();
+            GameAudioManager.EnsureExists();
         }
 
         private void Start()
         {
-            BuildCamera();
             UIFactory.EnsureEventSystem();
+            ForestAtmosphereSettings.EnsureExists();
 
-            // World gen
+            // 1. World gen
             var worldRoot = new GameObject("WorldRoot");
             _generator = new WorldGenerator { parent = worldRoot.transform, seed = 13579 };
             _generator.Generate();
             _base = _generator.DruidBase;
 
-            // Spawn gracza
+            // 2. Spawn gracza
             var gm = GameManager.Instance;
             PlayerAttributes attrs = gm != null ? gm.attributes : PlayerAttributes.CreateDruidBase();
 
@@ -49,37 +60,54 @@ namespace WPG.World
                 mana = data.currentMana;
             }
 
-            _player = PlayerBuilder.BuildDruid(spawn, attrs, out _stats, out var ctrl, out var combat);
+            PlayerCombat combat = null;
+            bool builtWithInvector = false;
 
-            // Camera follow + Controller binding
-            ctrl.cameraRig = _cam;
-            _cam.target = _player.transform;
-            // ustaw kamerę za graczem
-            _cam.transform.position = _player.transform.position - _player.transform.forward * 5f + Vector3.up * 2.5f;
+            if (useInvectorLocomotion)
+            {
+                var playerScale = InvectorPlayerBuilder.InvectorPlayerScale;
+                _player = InvectorPlayerBuilder.TryBuild(spawn, attrs, out _stats, out combat, out var adapter, playerScale);
+                builtWithInvector = _player != null;
+                if (builtWithInvector)
+                {
+                    BuildInvectorCamera(playerScale);
+                    if (adapter != null) adapter.tpCamera = _invectorCamera;
+                }
+            }
+
+            if (!builtWithInvector)
+            {
+                BuildWpgCamera();
+                _player = PlayerBuilder.BuildDruid(spawn, attrs, out _stats, out var ctrl, out combat);
+                ctrl.cameraRig = _wpgCamera;
+                _wpgCamera.ApplyCharacterScale(PlayerBuilder.ModelScale);
+                _wpgCamera.target = _player.transform;
+                _wpgCamera.transform.position = _player.transform.position - _player.transform.forward * _wpgCamera.distance + Vector3.up * _wpgCamera.height;
+                // InteractionDetector dodawany w starej ścieżce ręcznie (Invector dodaje go w buildzie).
+                if (_player.GetComponent<InteractionDetector>() == null)
+                    _player.AddComponent<InteractionDetector>();
+            }
 
             if (hp.HasValue) _stats.Init(attrs, hp, mana);
 
-            // Interaction detector
-            _player.AddComponent<InteractionDetector>();
-
-            // HUD
+            // 3. HUD
             var hudGO = new GameObject("HUD");
             _hud = hudGO.AddComponent<PlayerHUD>();
             _hud.Bind(_stats, combat);
 
-            // Pause menu
+            // 4. Pause menu
             var pauseGO = new GameObject("PauseMenu");
             _pause = pauseGO.AddComponent<PauseMenu>();
 
-            // Eventy
+            // 5. Eventy
             _stats.OnDied += OnPlayerDied;
             PlayerHUD.OnRespawnRequested += OnRespawn;
 
-            // Lock cursor
+            // 6. Lock cursor
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            // jeśli kontynuujemy, wczytaj zone name
+            // 7. Zone wave
             if (gm != null && gm.isContinuing && gm.pendingLoadData != null && !string.IsNullOrEmpty(gm.pendingLoadData.lastZoneName))
             {
                 WorldZone.RaiseExternal(gm.pendingLoadData.lastZoneName);
@@ -89,22 +117,60 @@ namespace WPG.World
                 WorldZone.RaiseExternal("Sady Ostatniego Strażnika");
             }
 
-            // Diagnostyka
-            Debug.Log($"[WorldBootstrap] Wygenerowano: {_generator.Camps.Count} obozów, " +
-                      $"{_generator.PowerSites.Count} miejsc mocy. Spawn: {spawn}");
+            Debug.Log($"[WorldBootstrap] Player driver: {(builtWithInvector ? "Invector" : "WPG legacy")} | camps={_generator.Camps.Count} | power sites={_generator.PowerSites.Count} | spawn={spawn}");
         }
 
-        private void BuildCamera()
+        private void BuildInvectorCamera(float characterScale)
+        {
+            // 1) Spróbuj prefab vThirdPersonCamera_LITE (ma już skonfigurowane offsetowy/clip itd.).
+            GameObject camGO = null;
+            var camPrefab = GameAssetRegistry.InvectorCamera;
+            if (camPrefab != null)
+            {
+                camGO = Object.Instantiate(camPrefab);
+                camGO.name = "MainCamera";
+            }
+            else
+            {
+                camGO = new GameObject("MainCamera");
+                camGO.AddComponent<Camera>();
+                camGO.AddComponent<vThirdPersonCamera>();
+                Debug.LogWarning("[WorldBootstrap] Brak prefabu vThirdPersonCamera_LITE — utworzyłem podstawową kamerę manualnie.");
+            }
+
+            camGO.tag = "MainCamera";
+            _mainCamera = camGO.GetComponent<Camera>();
+            if (_mainCamera == null) _mainCamera = camGO.AddComponent<Camera>();
+            _mainCamera.clearFlags = CameraClearFlags.Skybox;
+            _mainCamera.backgroundColor = GoldenHourLighting.FogSepia;
+            _mainCamera.fieldOfView = 65f;
+            _mainCamera.farClipPlane = 250f;
+            if (camGO.GetComponent<AudioListener>() == null) camGO.AddComponent<AudioListener>();
+
+            _invectorCamera = camGO.GetComponent<vThirdPersonCamera>();
+            if (_invectorCamera == null) _invectorCamera = camGO.AddComponent<vThirdPersonCamera>();
+
+            // vThirdPersonInput sam podpina kamerę przez FindFirstObjectByType<vThirdPersonCamera>(),
+            // ale możemy też explicit ustawić target.
+            if (_player != null)
+            {
+                _invectorCamera.SetMainTarget(_player.transform);
+            }
+
+            InvectorCameraScale.Apply(_invectorCamera, characterScale);
+        }
+
+        private void BuildWpgCamera()
         {
             var camGO = new GameObject("MainCamera");
             camGO.tag = "MainCamera";
             _mainCamera = camGO.AddComponent<Camera>();
-            _mainCamera.clearFlags = CameraClearFlags.SolidColor;
-            _mainCamera.backgroundColor = new Color(0.04f, 0.06f, 0.08f);
+            _mainCamera.clearFlags = CameraClearFlags.Skybox;
+            _mainCamera.backgroundColor = GoldenHourLighting.FogSepia;
             _mainCamera.fieldOfView = 65f;
             _mainCamera.farClipPlane = 250f;
             camGO.AddComponent<AudioListener>();
-            _cam = camGO.AddComponent<ThirdPersonCamera>();
+            _wpgCamera = camGO.AddComponent<ThirdPersonCamera>();
         }
 
         private void OnDestroy()

@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using WPG.Character;
+using WPG.Core;
 
 namespace WPG.Player
 {
@@ -7,25 +9,37 @@ namespace WPG.Player
     public class PlayerController : MonoBehaviour
     {
         public ThirdPersonCamera cameraRig;
+        public CharacterAnimDriver animDriver;
         public float gravity = -20f;
         public float jumpSpeed = 7f;
         public float rotateSpeed = 12f;
+        public float footstepInterval = 0.42f;
 
         private CharacterController _cc;
         private PlayerStats _stats;
         private float _verticalVel;
         private Vector3 _moveInput;
+        private float _nextFootstepAt;
         public Vector3 LastMoveDir { get; private set; }
+        public float CurrentSpeed { get; private set; }
+        public bool IsMoving => CurrentSpeed > 0.1f;
 
         private void Awake()
         {
             _cc = GetComponent<CharacterController>();
             _stats = GetComponent<PlayerStats>();
+            if (animDriver == null) animDriver = GetComponent<CharacterAnimDriver>();
         }
 
         private void Update()
         {
-            if (_stats != null && _stats.IsDead) return;
+            if (_stats != null && _stats.IsDead)
+            {
+                CurrentSpeed = 0f;
+                if (animDriver != null) { animDriver.SetSpeed(0f); animDriver.SetDead(true); }
+                return;
+            }
+            if (animDriver != null) animDriver.SetDead(false);
             if (cameraRig == null) return;
 
             ReadInput();
@@ -54,6 +68,12 @@ namespace WPG.Player
         {
             float speed = _stats != null && _stats.attributes != null ? _stats.attributes.MoveSpeed : 5f;
             Vector3 horiz = _moveInput * speed;
+            CurrentSpeed = horiz.magnitude;
+            if (animDriver != null)
+            {
+                animDriver.SetGrounded(_cc.isGrounded);
+                animDriver.SetSpeed(CurrentSpeed, speed);
+            }
 
             if (_cc.isGrounded)
             {
@@ -74,6 +94,12 @@ namespace WPG.Player
                 LastMoveDir = horiz.normalized;
                 Quaternion targetRot = Quaternion.LookRotation(horiz, Vector3.up);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotateSpeed * Time.deltaTime);
+
+                if (_cc.isGrounded && Time.time >= _nextFootstepAt)
+                {
+                    _nextFootstepAt = Time.time + footstepInterval;
+                    GameAudioManager.EnsureExists()?.PlayFootstep(transform.position);
+                }
             }
         }
 

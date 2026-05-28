@@ -9,7 +9,8 @@ EditorBuildSettings:
     path: Assets/_Game/Scenes/MainMenu.unity
     guid: b4570a7e74fdcd1be52fa4b5048c5764
   - enabled: 1
-    path: Assets/_Game/Scenes/CharacterCreation.unity
+    path: Assets/Invector-3rdPersonController_LITE/3D Models/Characters/Invector@V-Bot
+      2.0/Prefab/CharacterCreation.unity
     guid: ac4305661fdb39655b07ad0013245ac1
   - enabled: 1
     path: Assets/_Game/Scenes/World.unity

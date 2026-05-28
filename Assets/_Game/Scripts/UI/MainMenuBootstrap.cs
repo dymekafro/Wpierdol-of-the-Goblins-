@@ -13,6 +13,8 @@ namespace WPG.UI
         {
             GameManager.EnsureExists();
             SettingsManager.EnsureExists();
+            GameAudioManager.EnsureExists();
+            GameAssetLoader.LogAssetScanOnce();
         }
 
         private void Start()
@@ -30,12 +32,33 @@ namespace WPG.UI
 
             var canvas = UIFactory.CreateScreenCanvas("Canvas_MainMenu");
 
-            // Tło
-            var bg = UIFactory.CreatePanel(canvas.transform,
-                new Color(0.04f, 0.07f, 0.05f, 1f),
-                Vector2.zero, Vector2.one,
-                Vector2.zero, Vector2.zero,
-                "Background");
+            // Tło — Fantasy Free GUI menu BG lub gradient kolorystyczny
+            var menuBgSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiMenuBackground, GameAssetPaths.ResUiMenuBg);
+            var panelSprite = GameAssetLoader.LoadSprite(GameAssetPaths.GuiPanel, GameAssetPaths.ResUiPanel);
+
+            RectTransform bg;
+            if (menuBgSprite != null)
+            {
+                var bgImg = UIFactory.CreateImage(canvas.transform, menuBgSprite, Color.white,
+                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "Background", Image.Type.Simple);
+                bg = bgImg.rectTransform;
+            }
+            else
+            {
+                bg = UIFactory.CreatePanel(canvas.transform,
+                    new Color(0.04f, 0.07f, 0.05f, 1f),
+                    Vector2.zero, Vector2.one,
+                    Vector2.zero, Vector2.zero,
+                    "Background");
+            }
+
+            // Ramka tytułu (opcjonalna)
+            if (panelSprite != null)
+            {
+                UIFactory.CreateImage(canvas.transform, panelSprite, new Color(1f, 1f, 1f, 0.35f),
+                    new Vector2(0.08f, 0.72f), new Vector2(0.92f, 0.94f),
+                    Vector2.zero, Vector2.zero, "TitleFrame", Image.Type.Sliced);
+            }
 
             // Wewnętrzny gradient nakładki - dolny ciemniejszy
             var dark = UIFactory.CreatePanel(bg,
@@ -65,36 +88,34 @@ namespace WPG.UI
             Color hoverColor = new Color(0.25f, 0.6f, 0.3f, 1f);
             Color btnDisabled = new Color(0.1f, 0.15f, 0.1f, 0.6f);
 
-            UIFactory.CreateButton(canvas.transform, "Nowa Gra",
-                btnColor, hoverColor,
+            UIFactory.CreateFantasyButton(canvas.transform, "Nowa Gra",
                 () => GameManager.Instance.StartNewGame(),
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(-220, 120), new Vector2(220, 200), 40);
+                new Vector2(-220, 120), new Vector2(220, 200),
+                btnColor, hoverColor, 40);
 
             bool hasSave = SaveSystem.HasSave();
-            var continueBtn = UIFactory.CreateButton(canvas.transform, "Kontynuuj",
-                hasSave ? btnColor : btnDisabled, hasSave ? hoverColor : btnDisabled,
+            var continueBtn = UIFactory.CreateFantasyButton(canvas.transform, "Kontynuuj",
                 () =>
                 {
                     if (SaveSystem.HasSave()) GameManager.Instance.ContinueGame();
                 },
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(-220, 20), new Vector2(220, 100), 40);
+                new Vector2(-220, 20), new Vector2(220, 100),
+                hasSave ? btnColor : btnDisabled, hasSave ? hoverColor : btnDisabled, 40);
             continueBtn.interactable = hasSave;
 
-            UIFactory.CreateButton(canvas.transform, "Ustawienia",
-                new Color(0.2f, 0.3f, 0.35f, 0.92f),
-                new Color(0.3f, 0.45f, 0.5f, 1f),
+            UIFactory.CreateFantasyButton(canvas.transform, "Ustawienia",
                 () => OpenSettings(),
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(-220, -80), new Vector2(220, 0), 40);
+                new Vector2(-220, -80), new Vector2(220, 0),
+                new Color(0.2f, 0.3f, 0.35f, 0.92f), new Color(0.3f, 0.45f, 0.5f, 1f), 40);
 
-            UIFactory.CreateButton(canvas.transform, "Wyjście",
-                new Color(0.4f, 0.15f, 0.15f, 0.92f),
-                new Color(0.6f, 0.25f, 0.25f, 1f),
+            UIFactory.CreateFantasyButton(canvas.transform, "Wyjście",
                 () => GameManager.Instance.QuitGame(),
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(-220, -180), new Vector2(220, -100), 40);
+                new Vector2(-220, -180), new Vector2(220, -100),
+                new Color(0.4f, 0.15f, 0.15f, 0.92f), new Color(0.6f, 0.25f, 0.25f, 1f), 40);
 
             // Footer
             var footerHolder = UIFactory.CreatePanel(canvas.transform, new Color(0f, 0f, 0f, 0f),

@@ -6,6 +6,9 @@ namespace WPG.Enemies
 {
     public class GoblinArcher : GoblinBase
     {
+        protected override WorldAssetPlacer.CharacterModelKind? AssetModelKind =>
+            WorldAssetPlacer.CharacterModelKind.GoblinArcher;
+
         public float kiteRange = 5.5f;
         public float idealRange = 9f;
         public float maxRange = 14f;
@@ -23,11 +26,33 @@ namespace WPG.Enemies
             detectRange = 18f;
         }
 
+        protected override void OnFantasyGoblinAttached(WorldAssetPlacer.CharacterAttachResult attach)
+        {
+            TryAttachBow(attach.HandMount ?? attach.ModelRoot);
+        }
+
+        void TryAttachBow(Transform parent)
+        {
+            if (parent == null) return;
+            var bow = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bow.name = "Bow_Prop";
+            bow.transform.SetParent(parent, false);
+            bow.transform.localScale = new Vector3(0.06f, 0.55f, 0.06f);
+            bow.transform.localPosition = new Vector3(0.12f, 0f, 0.15f);
+            bow.transform.localRotation = Quaternion.Euler(0f, 90f, 25f);
+            var col = bow.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+            bow.GetComponent<MeshRenderer>().sharedMaterial =
+                MaterialFactory.Get(new Color(0.3f, 0.2f, 0.1f));
+        }
+
         protected override void Start()
         {
             base.Start();
 
-            // Łuk: cube za plecami
+            if (VisualFromAsset) return;
+
+            // Luk placeholder gdy brak modelu 3D
             var bow = GameObject.CreatePrimitive(PrimitiveType.Cube);
             bow.transform.SetParent(transform, false);
             bow.transform.localScale = new Vector3(0.08f, 0.7f, 0.08f);
@@ -91,6 +116,7 @@ namespace WPG.Enemies
         private void ShootArrow()
         {
             if (target == null) return;
+            NotifyAttackAnim();
             Vector3 origin = transform.position + Vector3.up * (scale * 1.3f) + transform.forward * 0.4f;
             Vector3 dir = (target.position + Vector3.up * 1f - origin).normalized;
 

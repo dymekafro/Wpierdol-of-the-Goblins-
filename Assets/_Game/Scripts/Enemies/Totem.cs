@@ -72,7 +72,9 @@ namespace WPG.Enemies
             // Pochyl totem
             transform.rotation = Quaternion.Euler(15f, transform.eulerAngles.y, 5f);
 
-            // usuń buffy
+            WorldAssetPlacer.TrySpawnVfx(WorldAssetPlacer.VfxKind.TotemDestroy, transform.position + Vector3.up * 2.5f, Quaternion.identity, 4f);
+
+            // usun buffy
             if (camp != null)
             {
                 foreach (var g in camp.Goblins)
@@ -135,6 +137,8 @@ namespace WPG.Enemies
             bg.transform.localScale = new Vector3(2f, 0.2f, 0.08f);
             var bgCol = bg.GetComponent<Collider>(); if (bgCol != null) Destroy(bgCol);
             bg.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(new Color(0.05f, 0.05f, 0.05f));
+
+            MaterialUpgrader.UpgradeHierarchy(gameObject);
 
             var pivot = new GameObject("Pivot");
             pivot.transform.SetParent(_barRoot.transform, false);

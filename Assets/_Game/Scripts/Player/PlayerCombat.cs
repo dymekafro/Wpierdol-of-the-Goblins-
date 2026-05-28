@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using WPG.Character;
 using WPG.Core;
 using WPG.World;
 
@@ -9,6 +10,7 @@ namespace WPG.Player
     {
         public Transform staffTip;
         public Transform handMount;
+        public CharacterAnimDriver animDriver;
         public float meleeRange = 2.2f;
         public float meleeArc = 110f;
         public float meleeCooldown = 0.6f;
@@ -39,6 +41,7 @@ namespace WPG.Player
         {
             _stats = GetComponent<PlayerStats>();
             _ctrl = GetComponent<PlayerController>();
+            if (animDriver == null) animDriver = GetComponent<CharacterAnimDriver>();
         }
 
         private void Start()
@@ -69,7 +72,9 @@ namespace WPG.Player
         private void DoMelee()
         {
             _meleeReadyAt = Time.time + meleeCooldown;
-            StartSwing();
+            if (animDriver != null) animDriver.TriggerAttack();
+            if (animDriver == null || !animDriver.HasRealAnimator) StartSwing();
+            GameAudioManager.EnsureExists()?.PlayHit(transform.position);
 
             int dmg = _stats != null && _stats.attributes != null ? _stats.attributes.MeleeDamage : 8;
             Vector3 origin = transform.position + Vector3.up * 1f;
@@ -94,10 +99,14 @@ namespace WPG.Player
             if (_stats == null) return;
             if (!_stats.TrySpendMana(fireballManaCost)) return;
             _fireballReadyAt = Time.time + fireballCooldown;
+            if (animDriver != null) animDriver.TriggerCast();
+            GameAudioManager.EnsureExists()?.PlayFireballCast(transform.position);
 
             int dmg = _stats.attributes != null ? _stats.attributes.SpellPower * 4 : 25;
-            Vector3 dir = _ctrl != null ? _ctrl.AimDirection() : transform.forward;
+            Vector3 dir = ResolveAimDirection();
             Vector3 spawnPos = (staffTip != null ? staffTip.position : transform.position + Vector3.up * 1.2f) + dir * 0.4f;
+
+            WorldAssetPlacer.TrySpawnVfx(WorldAssetPlacer.VfxKind.FireballCast, spawnPos, Quaternion.LookRotation(dir), 2f);
 
             var go = new GameObject("Fireball");
             go.transform.position = spawnPos;
@@ -127,17 +136,21 @@ namespace WPG.Player
             if (_stats == null) return;
             if (!_stats.TrySpendMana(healManaCost)) return;
             _healReadyAt = Time.time + healCooldown;
+            if (animDriver != null) animDriver.TriggerCast();
             _stats.Heal(healAmount);
 
-            // VFX placeholder: zielony błysk
-            var go = new GameObject("HealFX");
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = Vector3.up * 1f;
-            var light = go.AddComponent<Light>();
-            light.color = new Color(0.4f, 1f, 0.5f);
-            light.range = 4f;
-            light.intensity = 5f;
-            Destroy(go, 0.6f);
+            Vector3 healPos = transform.position + Vector3.up * 1f;
+            if (WorldAssetPlacer.TrySpawnVfx(WorldAssetPlacer.VfxKind.Heal, healPos, Quaternion.identity, 2.5f) == null)
+            {
+                var go = new GameObject("HealFX");
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = Vector3.up * 1f;
+                var light = go.AddComponent<Light>();
+                light.color = new Color(0.4f, 1f, 0.5f);
+                light.range = 4f;
+                light.intensity = 5f;
+                Destroy(go, 0.6f);
+            }
         }
 
         private void StartSwing()
@@ -146,6 +159,22 @@ namespace WPG.Player
             _swingT = 0f;
             _swingFromLocal = Quaternion.Euler(-30f, 0f, 0f);
             _swingToLocal = Quaternion.Euler(90f, 0f, 0f);
+        }
+
+        // Kierunek celowania: priorytetowo PlayerController (WPG legacy),
+        // następnie kamera główna (kompatybilność z Invector locomotion),
+        // na końcu transform.forward.
+        private Vector3 ResolveAimDirection()
+        {
+            if (_ctrl != null) return _ctrl.AimDirection();
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                Vector3 fwd = cam.transform.forward;
+                fwd.y = 0f;
+                if (fwd.sqrMagnitude > 0.001f) return fwd.normalized;
+            }
+            return transform.forward;
         }
 
         private void TickSwing()

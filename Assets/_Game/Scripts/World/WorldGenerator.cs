@@ -10,11 +10,11 @@ namespace WPG.World
     public class WorldGenerator
     {
         public int seed = 12345;
-        public float mapRadius = 120f;       // promień (czyli ~240m średnicy mapy)
-        public int treeCount = 320;
-        public int rockCount = 70;
-        public int bushCount = 140;
-        public int mushroomLightCount = 60;
+        public float mapRadius = 125f;       // ~250 m średnicy
+        public int treeCount = 480;
+        public int rockCount = 90;
+        public int bushCount = 200;
+        public int mushroomLightCount = 70;
         public Transform parent;
 
         public Vector3 SpawnPoint { get; private set; }
@@ -22,66 +22,87 @@ namespace WPG.World
         public readonly List<GoblinCamp> Camps = new List<GoblinCamp>();
         public readonly List<PowerSite> PowerSites = new List<PowerSite>();
         public readonly List<Vector3> OccupiedZones = new List<Vector3>();
+        public readonly List<Vector3> ClearingCenters = new List<Vector3>();
 
         private System.Random _rng;
-
-        private static readonly Color GroundDark = new Color(0.08f, 0.13f, 0.07f);
-        private static readonly Color GrassMoss = new Color(0.13f, 0.22f, 0.10f);
-        private static readonly Color GrassMid = new Color(0.16f, 0.27f, 0.13f);
-        private static readonly Color PathColor = new Color(0.20f, 0.16f, 0.10f);
-        private static readonly Color TrunkColor = new Color(0.20f, 0.14f, 0.08f);
-        private static readonly Color FoliageDark = new Color(0.08f, 0.20f, 0.08f);
-        private static readonly Color FoliageMid = new Color(0.10f, 0.25f, 0.10f);
-        private static readonly Color RockColor = new Color(0.25f, 0.25f, 0.27f);
-        private static readonly Color BushColor = new Color(0.10f, 0.18f, 0.08f);
-        private static readonly Color MushroomGlow = new Color(0.4f, 0.85f, 1f);
+        private WorldAssetPlacer _assetPlacer;
+        private List<Vector3> _pathPoints = new List<Vector3>();
 
         public void Generate()
         {
             _rng = new System.Random(seed);
+            AssetCatalog.Initialize();
+            GameAssetRegistry.Initialize();
 
             SpawnPoint = new Vector3(0f, 0f, 0f);
-            BuildSky();
-            BuildFog();
+            _pathPoints = BuildPathNetwork();
+            _assetPlacer = new WorldAssetPlacer(_rng, parent, _pathPoints, pathHalfWidth: WorldAssetPlacer.DefaultPathHalfWidth);
+
+            // Niebo, mgła i ambient — GoldenHourLighting (nie zależy od skyMaterial.mat w paczce).
+            GoldenHourLighting.Apply(parent);
             BuildGround();
-            BuildAmbientLight();
             BuildDruidBase();
             BuildCamps();
             BuildPowerSites();
             BuildVegetation();
+            BuildFutureMarkers();
+
+            MaterialUpgrader.UpgradeHierarchy(parent.gameObject);
+
+            ForestAtmosphereSettings.Instance?.ApplyAtmosphere();
+
+            AssetCatalog.LogReport();
+            LogGroundMaterialSources();
+            Debug.Log($"[WorldGenerator] {WorldAssetPlacer.GetPlacementSummary(_assetPlacer?.PlaceholderCount ?? 0)}");
         }
 
-        private void BuildSky()
+        private List<Vector3> BuildPathNetwork()
         {
-            // Dark gradient sky color via ambient
-            RenderSettings.skybox = null;
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.08f, 0.10f, 0.18f);
-            RenderSettings.ambientEquatorColor = new Color(0.05f, 0.08f, 0.08f);
-            RenderSettings.ambientGroundColor = new Color(0.02f, 0.04f, 0.02f);
-            RenderSettings.ambientIntensity = 0.8f;
+            var points = new List<Vector3> { Vector3.zero };
+
+            var hubs = new[]
+            {
+                new Vector3(Mathf.Cos(200f * Mathf.Deg2Rad) * 50f, 0f, Mathf.Sin(200f * Mathf.Deg2Rad) * 50f),
+                new Vector3(Mathf.Cos(40f * Mathf.Deg2Rad) * 55f, 0f, Mathf.Sin(40f * Mathf.Deg2Rad) * 55f),
+                new Vector3(Mathf.Cos(130f * Mathf.Deg2Rad) * 85f, 0f, Mathf.Sin(130f * Mathf.Deg2Rad) * 85f),
+                new Vector3(Mathf.Cos(280f * Mathf.Deg2Rad) * 90f, 0f, Mathf.Sin(280f * Mathf.Deg2Rad) * 90f),
+                new Vector3(Mathf.Cos(350f * Mathf.Deg2Rad) * 110f, 0f, Mathf.Sin(350f * Mathf.Deg2Rad) * 110f),
+                new Vector3(70f, 0f, 0f),
+                new Vector3(-60f, 0f, 70f),
+            };
+
+            for (int i = 0; i < hubs.Length; i++)
+                AppendWindingPath(points, Vector3.zero, hubs[i], 14 + i * 2, i);
+
+            AppendWindingPath(points, hubs[0], hubs[1], 10, 20);
+            AppendWindingPath(points, hubs[2], hubs[3], 12, 21);
+            AppendWindingPath(points, hubs[0], hubs[5], 9, 22);
+
+            return points;
         }
 
-        private void BuildFog()
+        private void AppendWindingPath(List<Vector3> points, Vector3 from, Vector3 to, int segments, int pathId)
         {
-            RenderSettings.fog = true;
-            RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = 0.025f;
-            RenderSettings.fogColor = new Color(0.07f, 0.11f, 0.13f);
+            for (int i = 1; i <= segments; i++)
+            {
+                float t = i / (float)segments;
+                Vector3 p = Vector3.Lerp(from, to, t);
+                float n1 = Mathf.PerlinNoise(t * 4f + pathId * 0.31f + seed * 0.001f, pathId * 0.17f) - 0.5f;
+                float n2 = Mathf.PerlinNoise(pathId * 0.22f, t * 5f + seed * 0.002f) - 0.5f;
+                p.x += n1 * 10f * Mathf.Sin(t * Mathf.PI);
+                p.z += n2 * 8f * Mathf.Cos(t * Mathf.PI * 1.2f);
+                points.Add(p);
+            }
         }
 
-        private void BuildAmbientLight()
+        private static void LogGroundMaterialSources()
         {
-            // Główne "światło księżyca" - bardzo słabe, lekko niebieskie
-            var moon = new GameObject("MoonLight");
-            moon.transform.SetParent(parent, false);
-            moon.transform.rotation = Quaternion.Euler(45f, 30f, 0f);
-            var l = moon.AddComponent<Light>();
-            l.type = LightType.Directional;
-            l.color = new Color(0.55f, 0.65f, 0.85f);
-            l.intensity = 0.4f;
-            l.shadows = LightShadows.Soft;
-            l.shadowStrength = 0.6f;
+            GameAssetRegistry.TryGetPath(GameAssetRegistry.Slot.TexturePath, out var dirtPath);
+            GameAssetRegistry.TryGetPath(GameAssetRegistry.Slot.TextureGrass, out var grassPath);
+            GameAssetRegistry.TryGetPath(GameAssetRegistry.Slot.SkyboxMaterial, out var skyPath);
+            bool hasDirt = GameAssetRegistry.PathDirtTexture != null;
+            bool hasGrass = GameAssetRegistry.GrassGroundTexture != null;
+            Debug.Log($"[WorldGenerator] Teren: dirt={(hasDirt ? dirtPath : "fallback kolor")}, grass={(hasGrass ? grassPath : "fallback kolor")}, skybox={skyPath ?? "procedural"}");
         }
 
         private void BuildGround()
@@ -96,7 +117,7 @@ namespace WPG.World
             ground.transform.SetParent(groundRoot.transform, false);
             ground.transform.localScale = new Vector3(planeSize / 10f, 1f, planeSize / 10f);
             var groundMR = ground.GetComponent<MeshRenderer>();
-            groundMR.sharedMaterial = MaterialFactory.Get(GroundDark);
+            groundMR.sharedMaterial = MaterialFactory.GetForestFloor();
 
             // Polany z lekko jaśniejszym kolorem (kilka clearings)
             for (int i = 0; i < 10; i++)
@@ -112,26 +133,40 @@ namespace WPG.World
                 clearing.transform.position = pos;
                 clearing.transform.localScale = new Vector3(r * 2f, 0.02f, r * 2f);
                 var cc = clearing.GetComponent<Collider>(); if (cc != null) Object.Destroy(cc);
-                clearing.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(i % 2 == 0 ? GrassMoss : GrassMid);
+                clearing.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.GetGrassMeadow(i % 2 == 0);
                 OccupiedZones.Add(new Vector3(pos.x, r * 0.7f, pos.z));
+                ClearingCenters.Add(new Vector3(pos.x, 0f, pos.z));
             }
 
-            // Kilka "ścieżek" - długie wąskie Cylinders ze ścieżkowym kolorem (placeholder)
-            for (int i = 0; i < 6; i++)
-            {
-                float angle = i * (Mathf.PI * 2f / 6f) + (float)(_rng.NextDouble() * 0.4 - 0.2);
-                var path = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                path.name = $"Path_{i}";
-                path.transform.SetParent(groundRoot.transform, false);
-                path.transform.position = new Vector3(Mathf.Cos(angle) * mapRadius * 0.3f, 0.015f, Mathf.Sin(angle) * mapRadius * 0.3f);
-                path.transform.rotation = Quaternion.Euler(0f, -angle * Mathf.Rad2Deg, 0f);
-                path.transform.localScale = new Vector3(2.5f, 0.05f, mapRadius * 0.7f);
-                var cc = path.GetComponent<Collider>(); if (cc != null) Object.Destroy(cc);
-                path.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(PathColor);
-            }
+            BuildPathMeshes(groundRoot.transform);
 
             // Niewidzialne ściany / kill plane - prosty pierścień colliderów
             BuildBoundaryWalls(mapRadius * 1.05f);
+        }
+
+        private void BuildPathMeshes(Transform groundRoot)
+        {
+            if (_pathPoints == null || _pathPoints.Count < 2) return;
+
+            var pathsRoot = new GameObject("Paths");
+            pathsRoot.transform.SetParent(groundRoot, false);
+
+            for (int i = 0; i < _pathPoints.Count - 1; i++)
+            {
+                Vector3 a = _pathPoints[i];
+                Vector3 b = _pathPoints[i + 1];
+                float len = Vector3.Distance(a, b);
+                if (len < 0.5f) continue;
+
+                var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                seg.name = $"PathSeg_{i}";
+                seg.transform.SetParent(pathsRoot.transform, false);
+                seg.transform.position = (a + b) * 0.5f + Vector3.up * 0.02f;
+                seg.transform.rotation = Quaternion.LookRotation((b - a).normalized, Vector3.up);
+                seg.transform.localScale = new Vector3(5.5f, 0.06f, len + 0.3f);
+                var cc = seg.GetComponent<Collider>(); if (cc != null) Object.Destroy(cc);
+                seg.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.GetPathDirt();
+            }
         }
 
         private void BuildBoundaryWalls(float radius)
@@ -217,8 +252,10 @@ namespace WPG.World
                 float a = (float)(_rng.NextDouble() * Mathf.PI * 2.0);
                 float d = 6f + (float)_rng.NextDouble() * 9f;
                 Vector3 pos = new Vector3(Mathf.Cos(a) * d, 0f, Mathf.Sin(a) * d);
-                SpawnMushroomLight(baseRoot.transform, pos, new Color(0.5f, 1f, 0.6f), 1.4f, 6f);
+                _assetPlacer?.PlaceMushroom(baseRoot.transform, baseRoot.transform.position + pos);
             }
+
+            _assetPlacer?.DecorateDruidBase(baseRoot.transform);
 
             // Trigger zone bazy
             var trigGO = new GameObject("DruidBase_Trigger");
@@ -297,7 +334,7 @@ namespace WPG.World
                     radius = 12f,
                     angleDeg = 350f,
                     distance = 110f,
-                    stormtroopers = 4, archers = 3,
+                    stormtroopers = 4, archers = 3, elites = 2,
                     captureBonusType = 2,
                     seedOffset = 5
                 },
@@ -324,6 +361,7 @@ namespace WPG.World
             public float distance;
             public int stormtroopers;
             public int archers;
+            public int elites;
             public int captureBonusType;
             public int seedOffset;
         }
@@ -340,7 +378,7 @@ namespace WPG.World
             ground.transform.localPosition = new Vector3(0f, 0.02f, 0f);
             ground.transform.localScale = new Vector3(def.radius * 2f, 0.03f, def.radius * 2f);
             var gc = ground.GetComponent<Collider>(); if (gc != null) Object.Destroy(gc);
-            ground.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(new Color(0.18f, 0.13f, 0.08f));
+            ground.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.GetGrassMeadow();
 
             // Palisada - cubes po obwodzie
             var palisades = new List<Renderer>();
@@ -475,6 +513,15 @@ namespace WPG.World
                 var gob = go.AddComponent<GoblinArcher>();
                 camp.RegisterGoblin(gob);
             }
+            for (int i = 0; i < def.elites; i++)
+            {
+                Vector3 p = RandomPointInDisc(sub, def.radius * 0.45f);
+                var go = new GameObject($"Goblin_Elite_{i}");
+                go.transform.SetParent(root.transform, false);
+                go.transform.localPosition = p;
+                var gob = go.AddComponent<GoblinShamanElite>();
+                camp.RegisterGoblin(gob);
+            }
 
             // Inicjalizacja stanu z save
             CampState initState = GameManager.Instance != null
@@ -489,6 +536,8 @@ namespace WPG.World
                 camp.RegisterTotem(null);
             }
             camp.Initialize(initState);
+
+            _assetPlacer?.DecorateCamp(root.transform, def.radius, 3 + def.ring);
 
             Camps.Add(camp);
         }
@@ -523,7 +572,8 @@ namespace WPG.World
                     st.transform.SetParent(root.transform, false);
                     st.transform.localPosition = new Vector3(Mathf.Cos(a) * 2.5f, 1.0f, Mathf.Sin(a) * 2.5f);
                     st.transform.localScale = new Vector3(0.5f, 2f, 0.4f);
-                    st.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(new Color(0.3f, 0.3f, 0.32f), 0.4f, def.glow, 0.4f);
+                    st.GetComponent<MeshRenderer>().sharedMaterial =
+                        MaterialFactory.Get(new Color(0.34f, 0.36f, 0.33f), 0.4f);
                 }
 
                 // Świecący centralny kryształ
@@ -560,6 +610,9 @@ namespace WPG.World
                     ps.MarkUsedSilent();
                 }
 
+                _assetPlacer?.DecoratePowerSite(root.transform, def.id == "power_site_stone_circle");
+                MaterialUpgrader.UpgradeHierarchy(root);
+
                 PowerSites.Add(ps);
                 OccupiedZones.Add(new Vector3(def.x, 4f, def.z));
             }
@@ -567,65 +620,99 @@ namespace WPG.World
 
         private void BuildVegetation()
         {
-            var root = new GameObject("Vegetation");
-            root.transform.SetParent(parent, false);
+            _assetPlacer?.FillForest(
+                treeCount, rockCount, bushCount, mushroomLightCount,
+                mapRadius, (pos, radius) => IsBlocked(pos, radius));
 
-            int placed = 0;
-            int attempts = 0;
-            int maxAttempts = treeCount * 5;
-            while (placed < treeCount && attempts < maxAttempts)
-            {
-                attempts++;
-                Vector3 p = RandomMapPoint();
-                if (IsBlocked(p)) continue;
-                SpawnTree(root.transform, p);
-                placed++;
-            }
-
-            // Skały
-            int rocksPlaced = 0;
-            attempts = 0;
-            while (rocksPlaced < rockCount && attempts < rockCount * 5)
-            {
-                attempts++;
-                Vector3 p = RandomMapPoint();
-                if (IsBlocked(p, 1f)) continue;
-                SpawnRock(root.transform, p);
-                rocksPlaced++;
-            }
-
-            // Krzaki
-            int bushPlaced = 0;
-            attempts = 0;
-            while (bushPlaced < bushCount && attempts < bushCount * 5)
-            {
-                attempts++;
-                Vector3 p = RandomMapPoint();
-                if (IsBlocked(p, 0.5f)) continue;
-                SpawnBush(root.transform, p);
-                bushPlaced++;
-            }
-
-            // Świecące grzyby - rozsiane w mroku
-            int mushPlaced = 0;
-            attempts = 0;
-            while (mushPlaced < mushroomLightCount && attempts < mushroomLightCount * 5)
-            {
-                attempts++;
-                Vector3 p = RandomMapPoint();
-                if (IsBlocked(p, 0.5f, includeBase: false)) continue;
-                Color c = _rng.NextDouble() < 0.5 ? MushroomGlow : new Color(0.5f, 1f, 0.3f);
-                SpawnMushroomLight(root.transform, p, c, 1.5f, 7f);
-                mushPlaced++;
-            }
+            BuildGrassDecoration();
         }
 
-        private Vector3 RandomMapPoint()
+        private void BuildGrassDecoration()
+        {
+            if (_assetPlacer == null) return;
+
+            int grassPoolCount = WPG.Core.GameAssetRegistry.WorldGrassPoolCount;
+            if (grassPoolCount == 0)
+            {
+                Debug.Log("[WorldGenerator] Brak prefabu trawy — pomijam scatter (importuj Fantasy Forest grass01 lub Nature Starter Kit 2).");
+                return;
+            }
+
+            var grassRoot = new GameObject("Grass");
+            grassRoot.transform.SetParent(parent, false);
+            Transform grassT = grassRoot.transform;
+
+            int meadowBesidePaths = _assetPlacer.ScatterGrassNearPaths(
+                grassT,
+                bandWidth: 2.6f,
+                density: 1.4f,
+                mapRadius: mapRadius,
+                isBlocked: (pos, padding) => IsBlocked(pos, padding, includeBase: false));
+
+            int inClearings = _assetPlacer.ScatterGrassInClearings(
+                grassT,
+                ClearingCenters,
+                clearingRadius: 9f,
+                perClearing: 22,
+                mapRadius: mapRadius,
+                isBlocked: (pos, padding) => IsBlocked(pos, padding, includeBase: false));
+
+            int sparseForest = ScatterGrassSparseForest(grassT, count: 220);
+
+            Debug.Log($"[WorldGenerator] Trawa rozłożona: łąki przy ścieżkach={meadowBesidePaths}, polany={inClearings}, las rzadko={sparseForest} (wykluczenie ścieżki={_assetPlacer.PathSurfaceExclusionRadius:F1}m)");
+        }
+
+        private int ScatterGrassSparseForest(Transform parentT, int count)
+        {
+            if (_assetPlacer == null) return 0;
+            int placed = 0;
+            int attempts = 0;
+            int maxAttempts = count * 8;
+            while (placed < count && attempts < maxAttempts)
+            {
+                attempts++;
+                Vector3 p = RandomMapPointForGrass();
+                if (IsBlocked(p, 0.2f, includeBase: false)) continue;
+                if (_assetPlacer.IsOnPath(p)) continue;
+                if (_assetPlacer.PlaceGrass(parentT, p)) placed++;
+            }
+            return placed;
+        }
+
+        private Vector3 RandomMapPointForGrass()
         {
             float a = (float)(_rng.NextDouble() * Mathf.PI * 2.0);
-            // r^2 distribution dla równomierności
             float r = Mathf.Sqrt((float)_rng.NextDouble()) * mapRadius;
             return new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r);
+        }
+
+        private void BuildFutureMarkers()
+        {
+            var futureRoot = new GameObject("FutureContent");
+            futureRoot.transform.SetParent(parent, false);
+
+            PlaceFutureMarker(futureRoot.transform, "future_gate_faded", "Przeszła Brama",
+                new Vector3(0f, 0f, mapRadius * 0.92f));
+            PlaceFutureMarker(futureRoot.transform, "future_region_swamp", "Wschód: Bagna",
+                new Vector3(mapRadius * 0.85f, 0f, 0f));
+            PlaceFutureMarker(futureRoot.transform, "future_quest_hermit", "Chata Pustelnika",
+                new Vector3(-mapRadius * 0.7f, 0f, -mapRadius * 0.5f));
+        }
+
+        private void PlaceFutureMarker(Transform parentT, string id, string label, Vector3 pos)
+        {
+            var go = new GameObject(id);
+            go.tag = "Untagged";
+            go.transform.SetParent(parentT, false);
+            go.transform.position = pos;
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = "Marker";
+            marker.transform.SetParent(go.transform, false);
+            marker.transform.localScale = new Vector3(0.6f, 2.5f, 0.6f);
+            marker.transform.localPosition = new Vector3(0f, 1.25f, 0f);
+            var col = marker.GetComponent<Collider>(); if (col != null) Object.Destroy(col);
+            marker.GetComponent<MeshRenderer>().sharedMaterial =
+                MaterialFactory.Get(new Color(0.25f, 0.28f, 0.32f), 0.3f, new Color(0.4f, 0.5f, 0.6f), 0.5f);
         }
 
         private bool IsBlocked(Vector3 p, float padding = 1.2f, bool includeBase = true)
@@ -639,94 +726,6 @@ namespace WPG.World
                 if (Vector3.Distance(p, z2) < z.y + padding) return true;
             }
             return false;
-        }
-
-        private void SpawnTree(Transform parentT, Vector3 pos)
-        {
-            float height = 5f + (float)_rng.NextDouble() * 7f;
-            float trunkR = 0.25f + (float)_rng.NextDouble() * 0.25f;
-            float canopyR = 1.6f + (float)_rng.NextDouble() * 2.2f;
-
-            var t = new GameObject("Tree");
-            t.transform.SetParent(parentT, false);
-            t.transform.position = pos;
-            t.transform.rotation = Quaternion.Euler(0f, (float)(_rng.NextDouble() * 360.0), 0f);
-
-            // Pień
-            var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            trunk.transform.SetParent(t.transform, false);
-            trunk.transform.localScale = new Vector3(trunkR, height * 0.5f, trunkR);
-            trunk.transform.localPosition = new Vector3(0f, height * 0.5f, 0f);
-            trunk.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(TrunkColor);
-            // Collider stays - drzewo blokuje
-
-            // Korona - 1-3 sphery
-            int layers = 1 + _rng.Next(0, 3);
-            Color foliage = _rng.NextDouble() < 0.5 ? FoliageDark : FoliageMid;
-            for (int i = 0; i < layers; i++)
-            {
-                var c = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                c.transform.SetParent(t.transform, false);
-                float yOff = height + i * canopyR * 0.6f;
-                c.transform.localPosition = new Vector3((float)_rng.NextDouble() * 0.5f - 0.25f, yOff, (float)_rng.NextDouble() * 0.5f - 0.25f);
-                c.transform.localScale = Vector3.one * canopyR * (1f - i * 0.15f);
-                var col = c.GetComponent<Collider>(); if (col != null) Object.Destroy(col);
-                c.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(foliage);
-            }
-        }
-
-        private void SpawnRock(Transform parentT, Vector3 pos)
-        {
-            var r = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            r.name = "Rock";
-            r.transform.SetParent(parentT, false);
-            r.transform.position = pos + Vector3.up * 0.3f;
-            float s = 0.6f + (float)_rng.NextDouble() * 1.8f;
-            r.transform.localScale = new Vector3(s, s * (0.5f + (float)_rng.NextDouble() * 0.4f), s);
-            r.transform.rotation = Quaternion.Euler((float)_rng.NextDouble() * 30f, (float)(_rng.NextDouble() * 360.0), (float)_rng.NextDouble() * 30f);
-            r.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(RockColor);
-        }
-
-        private void SpawnBush(Transform parentT, Vector3 pos)
-        {
-            var b = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            b.name = "Bush";
-            b.transform.SetParent(parentT, false);
-            b.transform.position = pos + Vector3.up * 0.3f;
-            float s = 0.6f + (float)_rng.NextDouble() * 0.8f;
-            b.transform.localScale = new Vector3(s, s * 0.6f, s);
-            var col = b.GetComponent<Collider>(); if (col != null) Object.Destroy(col);
-            b.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(BushColor);
-        }
-
-        private void SpawnMushroomLight(Transform parentT, Vector3 pos, Color color, float intensity = 1.5f, float range = 6f)
-        {
-            var m = new GameObject("MushroomLight");
-            m.transform.SetParent(parentT, false);
-            m.transform.position = pos;
-
-            // Trzonek
-            var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            stem.transform.SetParent(m.transform, false);
-            stem.transform.localScale = new Vector3(0.1f, 0.25f, 0.1f);
-            stem.transform.localPosition = new Vector3(0f, 0.25f, 0f);
-            var stemCol = stem.GetComponent<Collider>(); if (stemCol != null) Object.Destroy(stemCol);
-            stem.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(new Color(0.85f, 0.8f, 0.7f));
-
-            // Kapelusz
-            var cap = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            cap.transform.SetParent(m.transform, false);
-            cap.transform.localScale = new Vector3(0.35f, 0.2f, 0.35f);
-            cap.transform.localPosition = new Vector3(0f, 0.55f, 0f);
-            var capCol = cap.GetComponent<Collider>(); if (capCol != null) Object.Destroy(capCol);
-            cap.GetComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Get(color, 0.5f, color, 3f);
-
-            var light = new GameObject("Light").AddComponent<Light>();
-            light.transform.SetParent(m.transform, false);
-            light.transform.localPosition = new Vector3(0f, 0.6f, 0f);
-            light.color = color;
-            light.range = range;
-            light.intensity = intensity;
         }
     }
 

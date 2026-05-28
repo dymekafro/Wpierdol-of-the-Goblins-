@@ -16,6 +16,16 @@ namespace WPG.Player
         public float pitchMax = 60f;
         public float followSmooth = 12f;
 
+        const float BaseDistance = 5.5f;
+        const float BaseHeight = 2.2f;
+
+        public void ApplyCharacterScale(float scale)
+        {
+            if (scale <= 0.01f) return;
+            distance = BaseDistance * scale;
+            height = BaseHeight * scale;
+        }
+
         public float Yaw { get; private set; }
         public float Pitch { get; private set; } = 15f;
 
