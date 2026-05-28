@@ -3,7 +3,7 @@ using UnityEngine;
 using WPG.Character;
 using WPG.Core;
 using WPG.World;
-
+using WPG.UI;
 namespace WPG.Enemies
 {
     public enum GoblinKind { Stormtrooper, Archer, Shaman }
@@ -115,9 +115,29 @@ namespace WPG.Enemies
         public void ReceiveDamage(int amount, Vector3 hitPoint)
         {
             if (IsDead) return;
-            CurrentHealth -= amount;
+            if (amount <= 0) return;
+
+            const float criticalChance = 0.08f;
+
+            bool isCritical = UnityEngine.Random.value <= criticalChance;
+            int finalDamage = isCritical ? amount * 2 : amount;
+
+            Color damageColor = isCritical
+                ? new Color(1f, 0.9f, 0.05f, 1f)      // krytyk - żółty
+                : new Color(1f, 0.22f, 0.12f, 1f);    // zwykłe obrażenia - czerwony
+
+            CurrentHealth -= finalDamage;
+
+            DamageNumber.Show(
+                finalDamage,
+                transform.position + Vector3.up * 2.2f,
+                damageColor,
+                isCritical
+            );
+
             GameAudioManager.EnsureExists()?.PlayHit(hitPoint);
             FlashHit();
+
             if (CurrentHealth <= 0)
             {
                 Die();
