@@ -295,7 +295,7 @@ namespace WPG.Core
             "Assets/Invector-3rdPersonController_LITE/3D Models/Characters/Invector@V-Bot 2.0/Prefab/VBOT2.0_Custom.prefab";
 
         public const string InvectorThirdPersonPrefab =
-            "Assets/Invector-3rdPersonController_LITE/Prefabs/ThirdPersonController_LITE.prefab";
+    "Assets/_Game/Prefabs/Player/BlinkPlayerController.prefab";
 
         public const string InvectorLocomotionController =
             "Assets/Invector-3rdPersonController_LITE/Animator/Invector@BasicLocomotion.controller";

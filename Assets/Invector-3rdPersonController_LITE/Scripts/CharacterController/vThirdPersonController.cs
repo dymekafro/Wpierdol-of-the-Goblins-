@@ -4,9 +4,52 @@ namespace Invector.vCharacterController
 {
     public class vThirdPersonController : vThirdPersonAnimator
     {
+        private static float _externalMovementLockedUntil;
+
+        public static bool IsExternalMovementLocked
+        {
+            get { return Time.time < _externalMovementLockedUntil; }
+        }
+
+        public static void LockMovementForSeconds(float duration)
+        {
+            if (duration <= 0f)
+                return;
+
+            float lockUntil = Time.time + duration;
+
+            if (lockUntil > _externalMovementLockedUntil)
+                _externalMovementLockedUntil = lockUntil;
+        }
+
+        public static void ClearExternalMovementLock()
+        {
+            _externalMovementLockedUntil = 0f;
+        }
+
+        private bool IsMovementExternallyLocked()
+        {
+            return IsExternalMovementLocked;
+        }
+
+        private void ClearMovementInputForExternalLock()
+        {
+            input = Vector3.zero;
+            inputSmooth = Vector3.zero;
+            moveDirection = Vector3.zero;
+            isSprinting = false;
+        }
+
         public virtual void ControlAnimatorRootMotion()
         {
-            if (!this.enabled) return;
+            if (!this.enabled)
+                return;
+
+            if (IsMovementExternallyLocked())
+            {
+                ClearMovementInputForExternalLock();
+                return;
+            }
 
             if (inputSmooth == Vector3.zero)
             {
@@ -20,7 +63,14 @@ namespace Invector.vCharacterController
 
         public virtual void ControlLocomotionType()
         {
-            if (lockMovement) return;
+            if (IsMovementExternallyLocked())
+            {
+                ClearMovementInputForExternalLock();
+                return;
+            }
+
+            if (lockMovement)
+                return;
 
             if (locomotionType.Equals(LocomotionType.FreeWithStrafe) && !isStrafing || locomotionType.Equals(LocomotionType.OnlyFree))
             {
@@ -40,7 +90,14 @@ namespace Invector.vCharacterController
 
         public virtual void ControlRotationType()
         {
-            if (lockRotation) return;
+            if (IsMovementExternallyLocked())
+            {
+                ClearMovementInputForExternalLock();
+                return;
+            }
+
+            if (lockRotation)
+                return;
 
             bool validInput = input != Vector3.zero || (isStrafing ? strafeSpeed.rotateWithCamera : freeSpeed.rotateWithCamera);
 
@@ -56,6 +113,12 @@ namespace Invector.vCharacterController
 
         public virtual void UpdateMoveDirection(Transform referenceTransform = null)
         {
+            if (IsMovementExternallyLocked())
+            {
+                ClearMovementInputForExternalLock();
+                return;
+            }
+
             if (input.magnitude <= 0.01)
             {
                 moveDirection = Vector3.Lerp(moveDirection, Vector3.zero, (isStrafing ? strafeSpeed.movementSmooth : freeSpeed.movementSmooth) * Time.deltaTime);
@@ -80,6 +143,12 @@ namespace Invector.vCharacterController
 
         public virtual void Sprint(bool value)
         {
+            if (IsMovementExternallyLocked())
+            {
+                ClearMovementInputForExternalLock();
+                return;
+            }
+
             var sprintConditions = (input.sqrMagnitude > 0.1f && isGrounded &&
                 !(isStrafing && !strafeSpeed.walkByDefault && (horizontalSpeed >= 0.5 || horizontalSpeed <= -0.5 || verticalSpeed <= 0.1f)));
 
@@ -109,11 +178,20 @@ namespace Invector.vCharacterController
 
         public virtual void Strafe()
         {
+            if (IsMovementExternallyLocked())
+                return;
+
             isStrafing = !isStrafing;
         }
 
         public virtual void Jump()
         {
+            if (IsMovementExternallyLocked())
+            {
+                ClearMovementInputForExternalLock();
+                return;
+            }
+
             // trigger jump behaviour
             jumpCounter = jumpTimer;
             isJumping = true;

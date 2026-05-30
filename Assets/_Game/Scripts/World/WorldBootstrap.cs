@@ -15,6 +15,16 @@ namespace WPG.World
         // Fallback: stary CharacterController-based PlayerBuilder z WPG ThirdPersonCamera.
         public bool useInvectorLocomotion = true;
 
+        [Header("World")]
+        [Tooltip("Jeśli WorldRoot już istnieje w scenie, bootstrap użyje go zamiast generować drugi świat.")]
+        public string worldRootName = "WorldRoot";
+
+        [Tooltip("Jeśli WorldRoot nie istnieje, skrypt wygeneruje świat proceduralnie.")]
+        public bool generateWorldIfMissing = true;
+
+        [Tooltip("Opcjonalny obiekt spawnu gracza na ręcznie edytowanej mapie.")]
+        public string playerSpawnName = "PlayerSpawn";
+
         private WorldGenerator _generator;
         private GameObject _player;
         private PlayerStats _stats;
@@ -39,23 +49,48 @@ namespace WPG.World
             UIFactory.EnsureEventSystem();
             ForestAtmosphereSettings.EnsureExists();
 
-            // 1. World gen
-            var worldRoot = new GameObject("WorldRoot");
-            _generator = new WorldGenerator { parent = worldRoot.transform, seed = 13579 };
-            _generator.Generate();
-            _base = _generator.DruidBase;
+            // 1. World setup
+            GameObject worldRoot = GameObject.Find(worldRootName);
+            bool generatedWorld = false;
+
+            if (worldRoot == null)
+            {
+                if (generateWorldIfMissing)
+                {
+                    worldRoot = new GameObject(worldRootName);
+                    _generator = new WorldGenerator { parent = worldRoot.transform, seed = 13579 };
+                    _generator.Generate();
+                    _base = _generator.DruidBase;
+                    generatedWorld = true;
+
+                    Debug.Log("[WorldBootstrap] Wygenerowano nowy WorldRoot.");
+                }
+                else
+                {
+                    Debug.LogWarning("[WorldBootstrap] Brak WorldRoot w scenie i generateWorldIfMissing=false. Mapa nie zostanie wygenerowana.");
+                }
+            }
+            else
+            {
+                _base = FindFirstInChildren<DruidBase>(worldRoot);
+                Debug.Log("[WorldBootstrap] Znaleziono istniejący WorldRoot w scenie — pomijam generowanie drugiej mapy.");
+            }
 
             // 2. Spawn gracza
             var gm = GameManager.Instance;
             PlayerAttributes attrs = gm != null ? gm.attributes : PlayerAttributes.CreateDruidBase();
 
-            Vector3 spawn = _generator.SpawnPoint;
+            Vector3 spawn = ResolveSpawnPoint(worldRoot);
             int? hp = null;
             int? mana = null;
+
             if (gm != null && gm.isContinuing && gm.pendingLoadData != null)
             {
                 var data = gm.pendingLoadData;
-                if (data.hasPosition) spawn = data.PlayerPosition;
+
+                if (data.hasPosition)
+                    spawn = data.PlayerPosition;
+
                 hp = data.currentHealth;
                 mana = data.currentMana;
             }
@@ -68,27 +103,38 @@ namespace WPG.World
                 var playerScale = InvectorPlayerBuilder.InvectorPlayerScale;
                 _player = InvectorPlayerBuilder.TryBuild(spawn, attrs, out _stats, out combat, out var adapter, playerScale);
                 builtWithInvector = _player != null;
+
                 if (builtWithInvector)
                 {
                     BuildInvectorCamera(playerScale);
-                    if (adapter != null) adapter.tpCamera = _invectorCamera;
+
+                    if (adapter != null)
+                        adapter.tpCamera = _invectorCamera;
                 }
             }
 
             if (!builtWithInvector)
             {
                 BuildWpgCamera();
+
                 _player = PlayerBuilder.BuildDruid(spawn, attrs, out _stats, out var ctrl, out combat);
                 ctrl.cameraRig = _wpgCamera;
+
                 _wpgCamera.ApplyCharacterScale(PlayerBuilder.ModelScale);
                 _wpgCamera.target = _player.transform;
-                _wpgCamera.transform.position = _player.transform.position - _player.transform.forward * _wpgCamera.distance + Vector3.up * _wpgCamera.height;
-                // InteractionDetector dodawany w starej ścieżce ręcznie (Invector dodaje go w buildzie).
+                _wpgCamera.transform.position =
+                    _player.transform.position
+                    - _player.transform.forward * _wpgCamera.distance
+                    + Vector3.up * _wpgCamera.height;
+
+                // InteractionDetector dodawany w starej ścieżce ręcznie.
+                // Invector dodaje go w buildzie.
                 if (_player.GetComponent<InteractionDetector>() == null)
                     _player.AddComponent<InteractionDetector>();
             }
 
-            if (hp.HasValue) _stats.Init(attrs, hp, mana);
+            if (hp.HasValue)
+                _stats.Init(attrs, hp, mana);
 
             // 3. HUD
             var hudGO = new GameObject("HUD");
@@ -117,14 +163,71 @@ namespace WPG.World
                 WorldZone.RaiseExternal("Sady Ostatniego Strażnika");
             }
 
-            Debug.Log($"[WorldBootstrap] Player driver: {(builtWithInvector ? "Invector" : "WPG legacy")} | camps={_generator.Camps.Count} | power sites={_generator.PowerSites.Count} | spawn={spawn}");
+            int campCount = _generator != null && _generator.Camps != null ? _generator.Camps.Count : 0;
+            int powerSiteCount = _generator != null && _generator.PowerSites != null ? _generator.PowerSites.Count : 0;
+
+            Debug.Log(
+                $"[WorldBootstrap] Player driver: {(builtWithInvector ? "Invector" : "WPG legacy")} | " +
+                $"world={(generatedWorld ? "generated" : "scene")} | " +
+                $"camps={campCount} | power sites={powerSiteCount} | spawn={spawn}"
+            );
+        }
+
+        private Vector3 ResolveSpawnPoint(GameObject worldRoot)
+        {
+            if (_base != null)
+                return _base.spawnPoint;
+
+            if (!string.IsNullOrEmpty(playerSpawnName))
+            {
+                GameObject spawnGO = GameObject.Find(playerSpawnName);
+                if (spawnGO != null)
+                    return spawnGO.transform.position;
+            }
+
+            if (worldRoot != null)
+            {
+                Transform spawnChild = FindChildRecursive(worldRoot.transform, playerSpawnName);
+                if (spawnChild != null)
+                    return spawnChild.position;
+            }
+
+            Debug.LogWarning("[WorldBootstrap] Nie znaleziono DruidBase ani PlayerSpawn. Używam awaryjnego spawnu (0, 2, 0).");
+            return new Vector3(0f, 2f, 0f);
+        }
+
+        private static T FindFirstInChildren<T>(GameObject root) where T : Component
+        {
+            if (root == null)
+                return null;
+
+            return root.GetComponentInChildren<T>(true);
+        }
+
+        private static Transform FindChildRecursive(Transform parent, string childName)
+        {
+            if (parent == null || string.IsNullOrEmpty(childName))
+                return null;
+
+            foreach (Transform child in parent)
+            {
+                if (child.name == childName)
+                    return child;
+
+                Transform found = FindChildRecursive(child, childName);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
         }
 
         private void BuildInvectorCamera(float characterScale)
         {
-            // 1) Spróbuj prefab vThirdPersonCamera_LITE (ma już skonfigurowane offsetowy/clip itd.).
+            // 1) Spróbuj prefab vThirdPersonCamera_LITE.
             GameObject camGO = null;
             var camPrefab = GameAssetRegistry.InvectorCamera;
+
             if (camPrefab != null)
             {
                 camGO = Object.Instantiate(camPrefab);
@@ -139,23 +242,25 @@ namespace WPG.World
             }
 
             camGO.tag = "MainCamera";
+
             _mainCamera = camGO.GetComponent<Camera>();
-            if (_mainCamera == null) _mainCamera = camGO.AddComponent<Camera>();
+            if (_mainCamera == null)
+                _mainCamera = camGO.AddComponent<Camera>();
+
             _mainCamera.clearFlags = CameraClearFlags.Skybox;
             _mainCamera.backgroundColor = GoldenHourLighting.FogSepia;
             _mainCamera.fieldOfView = 65f;
             _mainCamera.farClipPlane = 250f;
-            if (camGO.GetComponent<AudioListener>() == null) camGO.AddComponent<AudioListener>();
+
+            if (camGO.GetComponent<AudioListener>() == null)
+                camGO.AddComponent<AudioListener>();
 
             _invectorCamera = camGO.GetComponent<vThirdPersonCamera>();
-            if (_invectorCamera == null) _invectorCamera = camGO.AddComponent<vThirdPersonCamera>();
+            if (_invectorCamera == null)
+                _invectorCamera = camGO.AddComponent<vThirdPersonCamera>();
 
-            // vThirdPersonInput sam podpina kamerę przez FindFirstObjectByType<vThirdPersonCamera>(),
-            // ale możemy też explicit ustawić target.
             if (_player != null)
-            {
                 _invectorCamera.SetMainTarget(_player.transform);
-            }
 
             InvectorCameraScale.Apply(_invectorCamera, characterScale);
         }
@@ -164,18 +269,22 @@ namespace WPG.World
         {
             var camGO = new GameObject("MainCamera");
             camGO.tag = "MainCamera";
+
             _mainCamera = camGO.AddComponent<Camera>();
             _mainCamera.clearFlags = CameraClearFlags.Skybox;
             _mainCamera.backgroundColor = GoldenHourLighting.FogSepia;
             _mainCamera.fieldOfView = 65f;
             _mainCamera.farClipPlane = 250f;
+
             camGO.AddComponent<AudioListener>();
             _wpgCamera = camGO.AddComponent<ThirdPersonCamera>();
         }
 
         private void OnDestroy()
         {
-            if (_stats != null) _stats.OnDied -= OnPlayerDied;
+            if (_stats != null)
+                _stats.OnDied -= OnPlayerDied;
+
             PlayerHUD.OnRespawnRequested -= OnRespawn;
         }
 
@@ -187,9 +296,16 @@ namespace WPG.World
 
         private void OnRespawn()
         {
-            if (_stats == null || _base == null) return;
-            _stats.ReviveAt(_base.spawnPoint);
-            if (_hud != null) _hud.HideDeathScreen();
+            if (_stats == null)
+                return;
+
+            Vector3 respawnPoint = _base != null ? _base.spawnPoint : ResolveSpawnPoint(GameObject.Find(worldRootName));
+
+            _stats.ReviveAt(respawnPoint);
+
+            if (_hud != null)
+                _hud.HideDeathScreen();
+
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }

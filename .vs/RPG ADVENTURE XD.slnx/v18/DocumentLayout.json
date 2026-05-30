@@ -3,8 +3,56 @@
   "WorkspaceRootPath": "C:\\Users\\sledz\\RPG ADVENTURE XD\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\world\\worldbootstrap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\world\\worldbootstrap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\sledz\\RPG ADVENTURE XD\\Library\\PackageCache\\com.unity.render-pipelines.universal@7228970dbdbf\\Shaders\\Lit.shader||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Library\\PackageCache\\com.unity.render-pipelines.universal@7228970dbdbf\\Shaders\\Lit.shader||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\core\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\core\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\ui\\mainmenubootstrap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\ui\\mainmenubootstrap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\emaceart\\slavic world free\\urp_support\\urp info.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\emaceart\\slavic world free\\urp_support\\urp info.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\emaceart\\slavic world free\\thanks and checkout this\\info.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\emaceart\\slavic world free\\thanks and checkout this\\info.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\player\\playercombat.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\player\\playercombat.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\invector-3rdpersoncontroller_lite\\scripts\\charactercontroller\\vthirdpersoncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\invector-3rdpersoncontroller_lite\\scripts\\charactercontroller\\vthirdpersoncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\player\\playercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\player\\playercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\player\\animatorparametermirror.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\player\\animatorparametermirror.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\core\\gameassetpaths.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\core\\gameassetpaths.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|c:\\users\\sledz\\rpg adventure xd\\assets\\_game\\scripts\\ui\\playerhud.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\_game\\scripts\\ui\\playerhud.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerMovementInputLock.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Assets\\_Game\\Scripts\\Player\\PlayerMovementInputLock.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,6 +67,152 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "WorldBootstrap.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\World\\WorldBootstrap.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\World\\WorldBootstrap.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\World\\WorldBootstrap.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\World\\WorldBootstrap.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T17:23:15.579Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Lit.shader",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Library\\PackageCache\\com.unity.render-pipelines.universal@7228970dbdbf\\Shaders\\Lit.shader",
+              "RelativeDocumentMoniker": "Library\\PackageCache\\com.unity.render-pipelines.universal@7228970dbdbf\\Shaders\\Lit.shader",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Library\\PackageCache\\com.unity.render-pipelines.universal@7228970dbdbf\\Shaders\\Lit.shader",
+              "RelativeToolTip": "Library\\PackageCache\\com.unity.render-pipelines.universal@7228970dbdbf\\Shaders\\Lit.shader",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002777|",
+              "WhenOpened": "2026-05-30T17:17:46.265Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GameManager.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameManager.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Core\\GameManager.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameManager.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Core\\GameManager.cs",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAiwJQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T16:53:36.379Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainMenuBootstrap.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\UI\\MainMenuBootstrap.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\UI\\MainMenuBootstrap.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\UI\\MainMenuBootstrap.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\UI\\MainMenuBootstrap.cs",
+              "ViewState": "AgIAAHEAAAAAAAAAAAAIwI0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T16:50:57.146Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "URP Info.txt",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\EmaceArt\\Slavic World Free\\URP_Support\\URP Info.txt",
+              "RelativeDocumentMoniker": "Assets\\EmaceArt\\Slavic World Free\\URP_Support\\URP Info.txt",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\EmaceArt\\Slavic World Free\\URP_Support\\URP Info.txt",
+              "RelativeToolTip": "Assets\\EmaceArt\\Slavic World Free\\URP_Support\\URP Info.txt",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-05-30T15:42:52.161Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Info.txt",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\EmaceArt\\Slavic World Free\\Thanks and checkout this\\Info.txt",
+              "RelativeDocumentMoniker": "Assets\\EmaceArt\\Slavic World Free\\Thanks and checkout this\\Info.txt",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\EmaceArt\\Slavic World Free\\Thanks and checkout this\\Info.txt",
+              "RelativeToolTip": "Assets\\EmaceArt\\Slavic World Free\\Thanks and checkout this\\Info.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-05-30T15:41:12.483Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "vThirdPersonController.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\Invector-3rdPersonController_LITE\\Scripts\\CharacterController\\vThirdPersonController.cs",
+              "RelativeDocumentMoniker": "Assets\\Invector-3rdPersonController_LITE\\Scripts\\CharacterController\\vThirdPersonController.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\Invector-3rdPersonController_LITE\\Scripts\\CharacterController\\vThirdPersonController.cs",
+              "RelativeToolTip": "Assets\\Invector-3rdPersonController_LITE\\Scripts\\CharacterController\\vThirdPersonController.cs",
+              "ViewState": "AgIAAJQAAAAAAAAAAAAAwLkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T11:36:44.223Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "PlayerMovementInputLock.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerMovementInputLock.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Player\\PlayerMovementInputLock.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerMovementInputLock.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Player\\PlayerMovementInputLock.cs",
+              "ViewState": "AgIAAKUAAAAAAAAAAAAAwLkAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T11:08:46.96Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PlayerCombat.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerCombat.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Player\\PlayerCombat.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerCombat.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Player\\PlayerCombat.cs",
+              "ViewState": "AgIAAGACAAAAAAAAAAAIwHwCAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T10:02:00.898Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "PlayerController.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerController.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Player\\PlayerController.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\PlayerController.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Player\\PlayerController.cs",
+              "ViewState": "AgIAAKAAAAAAAAAAAAAAwMEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-29T22:53:22.25Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AnimatorParameterMirror.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\AnimatorParameterMirror.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Player\\AnimatorParameterMirror.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Player\\AnimatorParameterMirror.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Player\\AnimatorParameterMirror.cs",
+              "ViewState": "AgIAADIAAAAAAAAAAAAQwDoAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-29T16:32:08.232Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "GameAssetPaths.cs",
+              "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameAssetPaths.cs",
+              "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\Core\\GameAssetPaths.cs",
+              "ToolTip": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\Core\\GameAssetPaths.cs",
+              "RelativeToolTip": "Assets\\_Game\\Scripts\\Core\\GameAssetPaths.cs",
+              "ViewState": "AgIAABsBAAAAAAAAAAAAwCkBAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-29T16:21:11.008Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "PlayerHUD.cs",
               "DocumentMoniker": "C:\\Users\\sledz\\RPG ADVENTURE XD\\Assets\\_Game\\Scripts\\UI\\PlayerHUD.cs",
               "RelativeDocumentMoniker": "Assets\\_Game\\Scripts\\UI\\PlayerHUD.cs",
@@ -26,8 +220,7 @@
               "RelativeToolTip": "Assets\\_Game\\Scripts\\UI\\PlayerHUD.cs",
               "ViewState": "AgIAAH4AAAAAAAAAAAAowIcAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-18T20:32:41.222Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-18T20:32:41.222Z"
             }
           ]
         }
