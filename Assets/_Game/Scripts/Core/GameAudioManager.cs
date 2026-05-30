@@ -26,6 +26,12 @@ namespace WPG.Core
         private AudioSource _sfxSource;
         private AudioSource _musicSource;
 
+        // Pula głosów 3D dla pozycyjnych SFX (kroki, hopy goblinów, walka) —
+        // round-robin zamiast PlayClipAtPoint, które tworzy/niszczy GameObjecty (skoki GC).
+        private const int PositionalVoiceCount = 10;
+        private AudioSource[] _positionalVoices;
+        private int _positionalVoiceIndex;
+
         // Warstwy muzyki (grane jednocześnie wg stanu gry).
         private AudioSource _soundtrackSource;
         private AudioSource _menuMusicSource;
@@ -86,6 +92,8 @@ namespace WPG.Core
             _menuMusicSource = CreateMusicLayer();
             _ambientSource = CreateMusicLayer();
 
+            CreatePositionalVoicePool();
+
             LoadClips();
             GameAssetLoader.LogAssetScanOnce();
             SettingsManager.EnsureExists();
@@ -112,6 +120,20 @@ namespace WPG.Core
             src.loop = true;
             src.spatialBlend = 0f;
             return src;
+        }
+
+        private void CreatePositionalVoicePool()
+        {
+            _positionalVoices = new AudioSource[PositionalVoiceCount];
+            for (int i = 0; i < PositionalVoiceCount; i++)
+            {
+                var go = new GameObject($"SfxVoice_{i}");
+                go.transform.SetParent(transform, false);
+                var src = go.AddComponent<AudioSource>();
+                src.playOnAwake = false;
+                src.spatialBlend = 1f;
+                _positionalVoices[i] = src;
+            }
         }
 
         private void LoadClips()
@@ -229,17 +251,25 @@ namespace WPG.Core
 
         private void PlayClip(AudioClip clip, float volume, Vector3? worldPos)
         {
-            if (clip == null || _sfxSource == null) return;
+            if (clip == null) return;
 
             float vol = volume * SfxScale;
             if (vol <= 0.001f) return;
 
             if (worldPos.HasValue)
             {
-                AudioSource.PlayClipAtPoint(clip, worldPos.Value, vol);
+                if (_positionalVoices == null || _positionalVoices.Length == 0) return;
+
+                var voice = _positionalVoices[_positionalVoiceIndex];
+                _positionalVoiceIndex = (_positionalVoiceIndex + 1) % _positionalVoices.Length;
+                if (voice == null) return;
+
+                voice.transform.position = worldPos.Value;
+                voice.PlayOneShot(clip, vol);
             }
             else
             {
+                if (_sfxSource == null) return;
                 _sfxSource.PlayOneShot(clip, vol);
             }
         }

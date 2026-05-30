@@ -168,8 +168,16 @@ namespace WPG.World
         public static string GetPlacementSummary(int placeholderCount) =>
             $"prefaby świata + placeholdery={placeholderCount}";
 
+        /// <summary>Osadza punkt świata na pofalowanym terenie (+ opcjonalny offset Y).</summary>
+        static Vector3 GroundPos(Vector3 worldPos, float yOffset = 0f)
+        {
+            worldPos.y = WorldGround.GetGroundHeight(worldPos.x, worldPos.z) + yOffset;
+            return worldPos;
+        }
+
         public void PlaceTree(Transform parentT, Vector3 pos)
         {
+            pos = GroundPos(pos);
             var prefab = PickTreePrefab();
             if (TryInstantiatePrefab(prefab, parentT, pos, "Tree")) return;
             _placeholderCount++;
@@ -178,6 +186,7 @@ namespace WPG.World
 
         public void PlaceRock(Transform parentT, Vector3 pos)
         {
+            pos = GroundPos(pos);
             var prefab = GameAssetRegistry.PickWorldRock(_rng) ?? AssetCatalog.Rock;
             if (TryInstantiatePrefab(prefab, parentT, pos, "Rock")) return;
             _placeholderCount++;
@@ -186,6 +195,7 @@ namespace WPG.World
 
         public void PlaceBush(Transform parentT, Vector3 pos)
         {
+            pos = GroundPos(pos);
             var prefab = GameAssetRegistry.PickWorldBush(_rng) ?? AssetCatalog.Bush;
             if (TryInstantiatePrefab(prefab, parentT, pos, "Bush")) return;
             _placeholderCount++;
@@ -198,6 +208,7 @@ namespace WPG.World
 
             var prefab = GameAssetRegistry.PickWorldGrass(_rng);
             if (prefab == null) return false;
+            pos = GroundPos(pos);
             var inst = UnityEngine.Object.Instantiate(prefab, parentT);
             inst.name = prefab.name;
             inst.transform.position = pos;
@@ -264,6 +275,7 @@ namespace WPG.World
         public void PlaceRuin(Transform parentT, Vector3 localOrWorldPos)
         {
             bool local = parentT != _parent;
+            if (!local) localOrWorldPos = GroundPos(localOrWorldPos);
             var prefab = GameAssetRegistry.PickWorldRuin(_rng) ?? AssetCatalog.Ruin;
             if (prefab != null)
             {
@@ -305,6 +317,7 @@ namespace WPG.World
 
         public void PlaceMushroom(Transform parentT, Vector3 pos)
         {
+            pos = GroundPos(pos);
             Color c = _rng.NextDouble() < 0.5 ? MushroomGlow : new Color(0.5f, 1f, 0.3f);
             SpawnMushroomLight(parentT, pos, c, 1.5f, 7f);
         }

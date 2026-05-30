@@ -32,6 +32,13 @@ namespace WPG.World
         [Header("Podłoże / Ground")]
         public Color groundColor = GoldenHourLighting.DefaultGroundColor;
 
+        // ~2x na sekundę w trybie gry — bez ciężkiej pracy co klatkę.
+        private const float ApplyInterval = 0.5f;
+        private float _nextApplyAt;
+
+        private MeshRenderer _groundRenderer;
+        private Light _sun;
+
         private void OnEnable()
         {
             Instance = this;
@@ -51,8 +58,14 @@ namespace WPG.World
 
         private void Update()
         {
-            if (Application.isPlaying)
-                ApplyAtmosphere();
+            if (!Application.isPlaying)
+                return;
+
+            if (Time.unscaledTime < _nextApplyAt)
+                return;
+
+            _nextApplyAt = Time.unscaledTime + ApplyInterval;
+            ApplyAtmosphere();
         }
 
         [ContextMenu("Apply Now")]
@@ -78,17 +91,18 @@ namespace WPG.World
 
         private void ApplySun()
         {
-            var sun = RenderSettings.sun;
-            if (sun == null)
-                sun = FindDirectionalLight();
+            if (_sun == null)
+                _sun = RenderSettings.sun;
+            if (_sun == null)
+                _sun = FindDirectionalLight();
 
-            if (sun == null)
+            if (_sun == null)
                 return;
 
-            sun.color = sunColor;
-            sun.intensity = sunIntensity;
-            sun.transform.rotation = Quaternion.Euler(sunRotation);
-            RenderSettings.sun = sun;
+            _sun.color = sunColor;
+            _sun.intensity = sunIntensity;
+            _sun.transform.rotation = Quaternion.Euler(sunRotation);
+            RenderSettings.sun = _sun;
         }
 
         private static Light FindDirectionalLight()
@@ -107,15 +121,17 @@ namespace WPG.World
         {
             MaterialFactory.GroundColorOverride = groundColor;
 
-            var groundPlane = GameObject.Find("GroundPlane");
-            if (groundPlane == null)
+            if (_groundRenderer == null)
+            {
+                var groundPlane = GameObject.Find("GroundPlane");
+                if (groundPlane != null)
+                    _groundRenderer = groundPlane.GetComponent<MeshRenderer>();
+            }
+
+            if (_groundRenderer == null)
                 return;
 
-            var renderer = groundPlane.GetComponent<MeshRenderer>();
-            if (renderer == null)
-                return;
-
-            var mat = renderer.sharedMaterial;
+            var mat = _groundRenderer.sharedMaterial;
             if (mat == null)
                 return;
 

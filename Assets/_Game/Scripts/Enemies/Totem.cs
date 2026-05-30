@@ -157,7 +157,8 @@ namespace WPG.Enemies
             if (_barFill == null || _barRoot == null) return;
             float f = Mathf.Clamp01((float)_hp / Mathf.Max(1, maxHealth));
             _barFill.localScale = new Vector3(f, 1f, 1f);
-            if (Camera.main != null) _barRoot.transform.forward = Camera.main.transform.forward;
+            var cam = CameraCache.Main;
+            if (cam != null) _barRoot.transform.forward = cam.transform.forward;
         }
 
         public void DimLight()

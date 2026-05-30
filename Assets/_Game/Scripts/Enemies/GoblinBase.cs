@@ -59,14 +59,16 @@ namespace WPG.Enemies
         protected virtual void Update()
         {
             if (IsDead) return;
-            if (target == null)
+            if (target == null && Time.time >= _nextTargetSearchAt)
             {
+                _nextTargetSearchAt = Time.time + 0.5f;
                 var p = GameObject.FindGameObjectWithTag("Player");
                 if (p != null) target = p.transform;
             }
 
             _movedThisFrame = false;
             UpdateAI();
+            SnapToGround();
             UpdateHealthBar();
 
             if (!_movedThisFrame)
@@ -87,6 +89,15 @@ namespace WPG.Enemies
         }
 
         protected abstract void UpdateAI();
+
+        // Gobliny poruszają się tylko w płaszczyźnie XZ (MoveTowardsXZ), więc co klatkę
+        // dociskamy je do pofalowanego terenu. Na płaskim świecie (brak konfiguracji) = Y 0.
+        void SnapToGround()
+        {
+            Vector3 p = transform.position;
+            p.y = WorldGround.GetGroundHeight(p.x, p.z);
+            transform.position = p;
+        }
 
         protected void NotifyAttackAnim()
         {
@@ -180,26 +191,29 @@ namespace WPG.Enemies
         {
             if (Renderers == null || Renderers.Length == 0) return;
             CancelInvoke(nameof(ResetEmission));
-            foreach (var r in Renderers)
-            {
-                if (r == null) continue;
-                if (r.material.HasProperty("_EmissionColor"))
-                {
-                    r.material.EnableKeyword("_EMISSION");
-                    r.material.SetColor("_EmissionColor", Color.red * 2f);
-                }
-            }
+            SetEmission(Color.red * 2f);
             Invoke(nameof(ResetEmission), 0.08f);
         }
 
         private void ResetEmission()
         {
+            SetEmission(Color.black);
+        }
+
+        // MaterialPropertyBlock zamiast r.material — bez klonowania materiałów (mniej GC, lepszy batching).
+        private void SetEmission(Color color)
+        {
             if (Renderers == null) return;
+            _flashBlock ??= new MaterialPropertyBlock();
             foreach (var r in Renderers)
             {
                 if (r == null) continue;
-                if (r.material.HasProperty("_EmissionColor"))
-                    r.material.SetColor("_EmissionColor", Color.black);
+                var mat = r.sharedMaterial;
+                if (mat == null || !mat.HasProperty(EmissionColorId)) continue;
+                mat.EnableKeyword("_EMISSION");
+                r.GetPropertyBlock(_flashBlock);
+                _flashBlock.SetColor(EmissionColorId, color);
+                r.SetPropertyBlock(_flashBlock);
             }
         }
 
@@ -212,6 +226,9 @@ namespace WPG.Enemies
 
         bool _movedThisFrame;
         float _nextHopAt;
+        float _nextTargetSearchAt;
+        MaterialPropertyBlock _flashBlock;
+        static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
         protected virtual void BuildVisual()
         {
@@ -521,9 +538,10 @@ namespace WPG.Enemies
             float frac = Mathf.Clamp01((float)CurrentHealth / Mathf.Max(1, maxHealth));
             HealthBarFill.localScale = new Vector3(frac, 1f, 1f);
 
-            if (Camera.main != null)
+            var cam = CameraCache.Main;
+            if (cam != null)
             {
-                HealthBarRoot.transform.forward = Camera.main.transform.forward;
+                HealthBarRoot.transform.forward = cam.transform.forward;
             }
         }
 

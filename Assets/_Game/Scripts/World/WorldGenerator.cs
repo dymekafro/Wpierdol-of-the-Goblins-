@@ -17,6 +17,12 @@ namespace WPG.World
         public int mushroomLightCount = 70;
         public Transform parent;
 
+        // --- Naturalny, pofalowany teren (łagodne wzgórza/doliny, NIE góry) ---
+        public float terrainHeightAmplitude = 2f;   // maks. wychylenie w metrach (±)
+        public float terrainNoiseScale = 55f;        // większa wartość = szersze, łagodniejsze wzgórza
+        public float terrainBaseFlatRadius = 18f;    // płaski plac wokół bazy/spawnu
+        public int terrainMeshResolution = 160;      // segmenty siatki gruntu (gęstość)
+
         public Vector3 SpawnPoint { get; private set; }
         public DruidBase DruidBase { get; private set; }
         public readonly List<GoblinCamp> Camps = new List<GoblinCamp>();
@@ -33,6 +39,8 @@ namespace WPG.World
             _rng = new System.Random(seed);
             AssetCatalog.Initialize();
             GameAssetRegistry.Initialize();
+
+            ConfigureGround();
 
             SpawnPoint = new Vector3(0f, 0f, 0f);
             _pathPoints = BuildPathNetwork();
@@ -105,27 +113,57 @@ namespace WPG.World
             Debug.Log($"[WorldGenerator] Teren: dirt={(hasDirt ? dirtPath : "fallback kolor")}, grass={(hasGrass ? grassPath : "fallback kolor")}, skybox={skyPath ?? "procedural"}");
         }
 
+        // Konfiguruje pofalowany teren + płaskie place (plateau) pod bazą, obozami i miejscami mocy.
+        // Wywoływane PRZED jakimkolwiek osadzaniem, żeby próbkowanie wysokości było już aktywne.
+        private void ConfigureGround()
+        {
+            WorldGround.Configure(seed, terrainHeightAmplitude, terrainNoiseScale);
+
+            // Baza / spawn — równy plac na wysokości 0.
+            WorldGround.AddFlatZone(0f, 0f, terrainBaseFlatRadius, terrainBaseFlatRadius * 0.7f, 0f);
+
+            // Obozy — łagodne plateau wtopione w teren (palisada/totem/ognisko siedzą równo).
+            foreach (var def in BuildCampDefs())
+            {
+                float x = Mathf.Cos(def.angleDeg * Mathf.Deg2Rad) * def.distance;
+                float z = Mathf.Sin(def.angleDeg * Mathf.Deg2Rad) * def.distance;
+                WorldGround.AddFlatZone(x, z, def.radius + 3f, 8f);
+            }
+
+            // Miejsca mocy (kamienny krąg / kapliczka).
+            WorldGround.AddFlatZone(70f, 0f, 6f, 6f);
+            WorldGround.AddFlatZone(-60f, 70f, 6f, 6f);
+        }
+
         private void BuildGround()
         {
             var groundRoot = new GameObject("Ground");
             groundRoot.transform.SetParent(parent, false);
 
-            // Główna płaszczyzna - gigantyczny Plane
+            // Główna powierzchnia — pofalowana siatka (zamiast płaskiego Plane).
             float planeSize = mapRadius * 2.4f;
-            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ground.name = "GroundPlane";
+            var ground = new GameObject("GroundPlane");
             ground.transform.SetParent(groundRoot.transform, false);
-            ground.transform.localScale = new Vector3(planeSize / 10f, 1f, planeSize / 10f);
-            var groundMR = ground.GetComponent<MeshRenderer>();
+            var mf = ground.AddComponent<MeshFilter>();
+            var groundMR = ground.AddComponent<MeshRenderer>();
+            var mc = ground.AddComponent<MeshCollider>();
+            var groundMesh = WorldGround.BuildMesh(planeSize, terrainMeshResolution);
+            mf.sharedMesh = groundMesh;
+            mc.sharedMesh = groundMesh;
             groundMR.sharedMaterial = MaterialFactory.GetForestFloor();
+
+            // Profil terenu — runtime (gobliny itd.) odtworzy z niego tę samą powierzchnię.
+            var profile = groundRoot.AddComponent<WorldGroundProfile>();
+            WorldGround.PopulateProfile(profile);
 
             // Polany z lekko jaśniejszym kolorem (kilka clearings)
             for (int i = 0; i < 10; i++)
             {
                 float angle = (float)(_rng.NextDouble() * Mathf.PI * 2.0);
                 float dist = (float)(_rng.NextDouble() * mapRadius * 0.9f);
-                Vector3 pos = new Vector3(Mathf.Cos(angle) * dist, 0.01f, Mathf.Sin(angle) * dist);
-                if (i == 0) pos = Vector3.zero + Vector3.up * 0.01f; // przy bazie
+                Vector3 pos = new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+                if (i == 0) pos = Vector3.zero; // przy bazie
+                pos.y = WorldGround.GetGroundHeight(pos.x, pos.z) + 0.02f;
                 float r = 6f + (float)_rng.NextDouble() * 8f;
                 var clearing = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 clearing.name = $"Clearing_{i}";
@@ -155,13 +193,15 @@ namespace WPG.World
             {
                 Vector3 a = _pathPoints[i];
                 Vector3 b = _pathPoints[i + 1];
+                a.y = WorldGround.GetGroundHeight(a.x, a.z);
+                b.y = WorldGround.GetGroundHeight(b.x, b.z);
                 float len = Vector3.Distance(a, b);
                 if (len < 0.5f) continue;
 
                 var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 seg.name = $"PathSeg_{i}";
                 seg.transform.SetParent(pathsRoot.transform, false);
-                seg.transform.position = (a + b) * 0.5f + Vector3.up * 0.02f;
+                seg.transform.position = (a + b) * 0.5f + Vector3.up * 0.06f;
                 seg.transform.rotation = Quaternion.LookRotation((b - a).normalized, Vector3.up);
                 seg.transform.localScale = new Vector3(5.5f, 0.06f, len + 0.3f);
                 var cc = seg.GetComponent<Collider>(); if (cc != null) Object.Destroy(cc);
@@ -197,7 +237,7 @@ namespace WPG.World
         {
             var baseRoot = new GameObject("DruidBase");
             baseRoot.transform.SetParent(parent, false);
-            baseRoot.transform.position = Vector3.zero;
+            baseRoot.transform.position = new Vector3(0f, WorldGround.GetGroundHeight(0f, 0f), 0f);
 
             // Pierścień kamieni
             int stones = 9;
@@ -275,8 +315,22 @@ namespace WPG.World
 
         private void BuildCamps()
         {
-            // 4 obozy w różnych pierścieniach
-            CampDef[] defs = new CampDef[]
+            foreach (var def in BuildCampDefs())
+            {
+                Vector3 pos = new Vector3(
+                    Mathf.Cos(def.angleDeg * Mathf.Deg2Rad) * def.distance,
+                    0f,
+                    Mathf.Sin(def.angleDeg * Mathf.Deg2Rad) * def.distance);
+                pos.y = WorldGround.GetGroundHeight(pos.x, pos.z);
+                BuildCamp(def, pos);
+                OccupiedZones.Add(new Vector3(pos.x, def.radius + 4f, pos.z));
+            }
+        }
+
+        // Definicje 5 obozów (współdzielone przez ConfigureGround i BuildCamps).
+        private CampDef[] BuildCampDefs()
+        {
+            return new CampDef[]
             {
                 new CampDef
                 {
@@ -339,16 +393,6 @@ namespace WPG.World
                     seedOffset = 5
                 },
             };
-
-            foreach (var def in defs)
-            {
-                Vector3 pos = new Vector3(
-                    Mathf.Cos(def.angleDeg * Mathf.Deg2Rad) * def.distance,
-                    0f,
-                    Mathf.Sin(def.angleDeg * Mathf.Deg2Rad) * def.distance);
-                BuildCamp(def, pos);
-                OccupiedZones.Add(new Vector3(pos.x, def.radius + 4f, pos.z));
-            }
         }
 
         private struct CampDef
@@ -561,7 +605,7 @@ namespace WPG.World
             {
                 var root = new GameObject($"PowerSite_{def.id}");
                 root.transform.SetParent(parent, false);
-                root.transform.position = new Vector3(def.x, 0f, def.z);
+                root.transform.position = new Vector3(def.x, WorldGround.GetGroundHeight(def.x, def.z), def.z);
 
                 // Krąg kamieni
                 int stones = 6;
@@ -704,7 +748,7 @@ namespace WPG.World
             var go = new GameObject(id);
             go.tag = "Untagged";
             go.transform.SetParent(parentT, false);
-            go.transform.position = pos;
+            go.transform.position = WorldGround.Snap(pos);
             var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             marker.name = "Marker";
             marker.transform.SetParent(go.transform, false);

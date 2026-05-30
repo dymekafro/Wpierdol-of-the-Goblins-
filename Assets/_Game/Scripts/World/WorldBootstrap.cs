@@ -26,6 +26,16 @@ namespace WPG.World
         [Tooltip("Opcjonalny obiekt spawnu gracza na ręcznie edytowanej mapie.")]
         public string playerSpawnName = "PlayerSpawn";
 
+        [Header("Naturalny teren (tylko gdy świat generowany proceduralnie)")]
+        [Tooltip("Maks. wychylenie terenu w metrach (±). Łagodne wzgórza: 1-4.")]
+        public float terrainHeightAmplitude = 2f;
+        [Tooltip("Skala szumu — większa wartość = szersze, łagodniejsze wzgórza.")]
+        public float terrainNoiseScale = 55f;
+        [Tooltip("Promień płaskiego placu wokół bazy/spawnu.")]
+        public float terrainBaseFlatRadius = 18f;
+        [Tooltip("Gęstość siatki gruntu (segmenty).")]
+        [Range(16, 250)] public int terrainMeshResolution = 160;
+
         private WorldGenerator _generator;
         private GameObject _player;
         private PlayerStats _stats;
@@ -59,7 +69,15 @@ namespace WPG.World
                 if (generateWorldIfMissing)
                 {
                     worldRoot = new GameObject(worldRootName);
-                    _generator = new WorldGenerator { parent = worldRoot.transform, seed = 13579 };
+                    _generator = new WorldGenerator
+                    {
+                        parent = worldRoot.transform,
+                        seed = 13579,
+                        terrainHeightAmplitude = terrainHeightAmplitude,
+                        terrainNoiseScale = terrainNoiseScale,
+                        terrainBaseFlatRadius = terrainBaseFlatRadius,
+                        terrainMeshResolution = terrainMeshResolution,
+                    };
                     _generator.Generate();
                     _base = _generator.DruidBase;
                     generatedWorld = true;

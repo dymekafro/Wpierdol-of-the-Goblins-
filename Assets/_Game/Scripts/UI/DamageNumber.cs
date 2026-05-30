@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using WPG.Core;
 
 namespace WPG.UI
 {
@@ -11,6 +13,7 @@ namespace WPG.UI
         private const float EndScale = 0.65f;
 
         private static Canvas _worldCanvas;
+        private static readonly Queue<DamageNumber> Pool = new Queue<DamageNumber>();
 
         private RectTransform _rectTransform;
         private Text _text;
@@ -34,11 +37,26 @@ namespace WPG.UI
 
             EnsureCanvas();
 
-            GameObject go = new GameObject(isCritical ? "CriticalDamageNumber" : "DamageNumber");
+            DamageNumber number = GetFromPool();
+            number.Activate(damage, worldPosition, color, isCritical);
+        }
+
+        // Prosty pool — recykling obiektów UI zamiast Instantiate/Destroy przy każdym trafieniu.
+        private static DamageNumber GetFromPool()
+        {
+            while (Pool.Count > 0)
+            {
+                DamageNumber pooled = Pool.Dequeue();
+                if (pooled != null)
+                    return pooled;
+            }
+
+            GameObject go = new GameObject("DamageNumber");
             go.transform.SetParent(_worldCanvas.transform, false);
 
             DamageNumber number = go.AddComponent<DamageNumber>();
-            number.Initialize(damage, worldPosition, color, isCritical);
+            number.BuildComponents();
+            return number;
         }
 
         private static void EnsureCanvas()
@@ -61,24 +79,32 @@ namespace WPG.UI
             canvasObject.AddComponent<GraphicRaycaster>();
         }
 
-        private void Initialize(int damage, Vector3 worldPosition, Color color, bool isCritical)
+        // Jednorazowe utworzenie komponentów (AddComponent można wołać tylko raz na obiekt).
+        private void BuildComponents()
         {
-            _camera = Camera.main;
-            _worldPosition = worldPosition;
-
             _rectTransform = gameObject.AddComponent<RectTransform>();
             _rectTransform.sizeDelta = new Vector2(150f, 60f);
 
             _canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
             _text = gameObject.AddComponent<Text>();
-            _text.text = damage.ToString();
             _text.alignment = TextAnchor.MiddleCenter;
             _text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            _text.fontSize = isCritical ? 34 : 28;
             _text.fontStyle = FontStyle.Bold;
-            _text.color = color;
             _text.raycastTarget = false;
+        }
+
+        private void Activate(int damage, Vector3 worldPosition, Color color, bool isCritical)
+        {
+            _camera = CameraCache.Main;
+            _worldPosition = worldPosition;
+            _time = 0f;
+
+            gameObject.name = isCritical ? "CriticalDamageNumber" : "DamageNumber";
+
+            _text.text = damage.ToString();
+            _text.fontSize = isCritical ? 34 : 28;
+            _text.color = color;
 
             _startScale = isCritical ? StartScaleCritical : StartScaleNormal;
 
@@ -90,7 +116,16 @@ namespace WPG.UI
 
             _worldVelocity = cameraRight * sideDirection * sideSpeed + Vector3.up * upSpeed;
 
+            if (!gameObject.activeSelf)
+                gameObject.SetActive(true);
+
             UpdateVisual();
+        }
+
+        private void Release()
+        {
+            gameObject.SetActive(false);
+            Pool.Enqueue(this);
         }
 
         private void Update()
@@ -99,7 +134,7 @@ namespace WPG.UI
 
             if (_time >= Lifetime)
             {
-                Destroy(gameObject);
+                Release();
                 return;
             }
 
@@ -113,7 +148,7 @@ namespace WPG.UI
         private void UpdateVisual()
         {
             if (_camera == null)
-                _camera = Camera.main;
+                _camera = CameraCache.Main;
 
             if (_camera == null)
                 return;
