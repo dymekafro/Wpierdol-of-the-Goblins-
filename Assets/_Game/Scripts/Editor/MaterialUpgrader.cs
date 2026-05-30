@@ -116,6 +116,46 @@ namespace WPG.EditorTools
             Debug.Log($"[MaterialUpgrader] Zaktualizowano {upgraded} materiałów w Assets/ (w tym Fantasy Forest).");
         }
 
+        [MenuItem("WPG/Fix Missing Materials in WorldRoot Prefab")]
+        public static void FixWorldRootPrefabMaterials()
+        {
+            const string prefabPath = "Assets/_Game/Prefabs/World/WorldRoot.prefab";
+            if (!AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath))
+            {
+                EditorUtility.DisplayDialog("WorldRoot",
+                    $"Nie znaleziono prefabu:\n{prefabPath}", "OK");
+                return;
+            }
+
+            var root = PrefabUtility.LoadPrefabContents(prefabPath);
+            int upgradedMats = 0;
+            var seenMats = new HashSet<Material>();
+            foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
+            {
+                foreach (var mat in renderer.sharedMaterials)
+                {
+                    if (mat == null || !seenMats.Add(mat)) continue;
+                    if (MaterialUpgrader.UpgradeMaterial(mat))
+                    {
+                        EditorUtility.SetDirty(mat);
+                        upgradedMats++;
+                    }
+                }
+            }
+
+            int fixedRenderers = MissingMaterialFixer.FixNullMaterials(root);
+            PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            PrefabUtility.UnloadPrefabContents(root);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            EditorUtility.DisplayDialog("WorldRoot — materiały",
+                $"Naprawiono {fixedRenderers} rendererów z brakującym materiałem.\n" +
+                $"Zaktualizowano {upgradedMats} istniejących materiałów do URP.",
+                "OK");
+            Debug.Log($"[MaterialUpgrader] WorldRoot prefab: {fixedRenderers} rendererów, {upgradedMats} materiałów URP.");
+        }
+
         [MenuItem("WPG/Fix Fantasy Forest Leaf Materials")]
         public static void FixFantasyForestLeafMaterials()
         {

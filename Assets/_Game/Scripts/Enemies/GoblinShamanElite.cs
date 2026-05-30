@@ -9,7 +9,7 @@ namespace WPG.Enemies
         protected override WorldAssetPlacer.CharacterModelKind? AssetModelKind =>
             WorldAssetPlacer.CharacterModelKind.GoblinElite;
 
-        protected override float ModelScaleMultiplier => 1.08f;
+        protected override float ModelScaleMultiplier => WorldAssetPlacer.GoblinCharacterModelScale * 1.08f;
 
         protected override void Awake()
         {

@@ -59,6 +59,17 @@ namespace WPG.Character
 
         public bool HasRealAnimator => _hasAnimator;
 
+        /// <summary>
+        /// Mecanim jest gotowy tylko gdy ma controller ORAZ poprawny (valid) avatar.
+        /// Bez valid avatara Animator nie animuje kości i model stoi w T-pose — wtedy
+        /// procedural musi przejąć lokomocję.
+        /// </summary>
+        public bool MecanimReady =>
+            animator != null
+            && animator.runtimeAnimatorController != null
+            && animator.avatar != null
+            && animator.avatar.isValid;
+
         void OnEnable()
         {
             ResolveAnimator();
@@ -90,7 +101,7 @@ namespace WPG.Character
         void ResolveAnimator()
         {
             if (animator == null) animator = GetComponentInChildren<Animator>();
-            _hasAnimator = animator != null && animator.runtimeAnimatorController != null;
+            _hasAnimator = MecanimReady;
             if (_hasAnimator && !_usesInvectorLocomotion)
                 _usesInvectorLocomotion = HasParam(invectorInputMagnitude, AnimatorControllerParameterType.Float);
         }
@@ -141,12 +152,19 @@ namespace WPG.Character
         public void TriggerAttack()
         {
             if (_dead) return;
+
+            bool firedMecanim = false;
             if (_hasAnimator && !string.IsNullOrEmpty(attackTrigger) && HasParam(attackTrigger, AnimatorControllerParameterType.Trigger))
             {
                 animator.SetTrigger(attackTrigger);
-                return;
+                firedMecanim = true;
             }
-            _swingT = 0f;
+
+            // Gdy Mecanim NIE obsłużył ataku (np. Invector BasicLocomotion nie ma triggera
+            // Attack — przypadek goblinów), odpal proceduralny swing ręki. Dla gracza z
+            // controllerem zawierającym Attack zostaje czysty Mecanim (bez regresji).
+            if (!firedMecanim)
+                _swingT = 0f;
         }
 
         public void TriggerCast()
@@ -185,12 +203,22 @@ namespace WPG.Character
                 return;
             }
 
+            // Mecanim aktywny → lokomocję obsługuje controller; proceduralny swing
+            // ataku nakładamy w LateUpdate (po ewaluacji Animatora).
             if (_hasAnimator)
-            {
                 return;
-            }
 
             ProceduralUpdate(Time.deltaTime);
+        }
+
+        // LateUpdate odpala się PO ewaluacji Animatora, więc tu nadpisujemy pozę kości
+        // ręki proceduralnym swingiem ataku/castu (Invector BasicLocomotion nie ma
+        // triggera Attack). Tylko tryb Mecanim — procedural-only robi to już w Update.
+        void LateUpdate()
+        {
+            if (_dead || !_hasAnimator) return;
+            if (_swingT >= 0f || _castT >= 0f)
+                UpdateAttackSwing(Time.deltaTime);
         }
 
         void ProceduralUpdate(float dt)
@@ -214,46 +242,62 @@ namespace WPG.Character
             float legSwing = Mathf.Sin(_phase) * walkLegSwingDeg * walkSpeed;
             float armSwing = Mathf.Sin(_phase) * walkArmSwingDeg * walkSpeed;
 
-            if (leftLeg != null && _capturedLL) leftLeg.localRotation = _leftLegBase * Quaternion.Euler(legSwing, 0f, 0f);
-            if (rightLeg != null && _capturedRL) rightLeg.localRotation = _rightLegBase * Quaternion.Euler(-legSwing, 0f, 0f);
-            if (leftArm != null && _capturedLA) leftArm.localRotation = _leftArmBase * Quaternion.Euler(-armSwing, 0f, 0f);
-            if (rightArm != null && _capturedRA) rightArm.localRotation = _rightArmBase * Quaternion.Euler(armSwing, 0f, 0f);
+            if (leftLeg != null && _capturedLL)
+                leftLeg.localRotation = _leftLegBase * Quaternion.Euler(legSwing, 0f, legSwing * 0.35f);
+            if (rightLeg != null && _capturedRL)
+                rightLeg.localRotation = _rightLegBase * Quaternion.Euler(-legSwing, 0f, -legSwing * 0.35f);
+            if (leftArm != null && _capturedLA)
+                leftArm.localRotation = _leftArmBase * Quaternion.Euler(-armSwing, 0f, -armSwing * 0.25f);
+            if (rightArm != null && _capturedRA)
+                rightArm.localRotation = _rightArmBase * Quaternion.Euler(armSwing, 0f, armSwing * 0.25f);
 
             if (handMount != null && _capturedHand)
             {
-                if (_swingT >= 0f)
+                if (_swingT >= 0f || _castT >= 0f)
                 {
-                    _swingT += dt / Mathf.Max(0.05f, swingDuration);
-                    if (_swingT >= 1f)
-                    {
-                        _swingT = -1f;
-                        handMount.localRotation = _handBaseRot;
-                    }
-                    else
-                    {
-                        float t = _swingT < 0.5f ? _swingT * 2f : (1f - _swingT) * 2f;
-                        Quaternion swingTo = _handBaseRot * Quaternion.Euler(120f, 0f, 0f);
-                        handMount.localRotation = Quaternion.Slerp(_handBaseRot, swingTo, t);
-                    }
-                }
-                else if (_castT >= 0f)
-                {
-                    _castT += dt / Mathf.Max(0.05f, castDuration);
-                    if (_castT >= 1f)
-                    {
-                        _castT = -1f;
-                        handMount.localRotation = _handBaseRot;
-                    }
-                    else
-                    {
-                        float t = _castT < 0.4f ? _castT / 0.4f : (1f - _castT) / 0.6f;
-                        Quaternion castUp = _handBaseRot * Quaternion.Euler(-70f, 0f, -10f);
-                        handMount.localRotation = Quaternion.Slerp(_handBaseRot, castUp, t);
-                    }
+                    UpdateAttackSwing(dt);
                 }
                 else if (!(_capturedRA && rightArm != null))
                 {
                     handMount.localRotation = _handBaseRot * Quaternion.Euler(armSwing * 0.5f, 0f, 0f);
+                }
+            }
+        }
+
+        // Proceduralny swing ręki dla ataku (_swingT) / castu (_castT). Wywoływane
+        // zarówno w trybie procedural, jak i hybrydowym (na wierzchu pozy Mecanim).
+        void UpdateAttackSwing(float dt)
+        {
+            if (handMount == null || !_capturedHand) return;
+
+            if (_swingT >= 0f)
+            {
+                _swingT += dt / Mathf.Max(0.05f, swingDuration);
+                if (_swingT >= 1f)
+                {
+                    _swingT = -1f;
+                    handMount.localRotation = _handBaseRot;
+                }
+                else
+                {
+                    float t = _swingT < 0.5f ? _swingT * 2f : (1f - _swingT) * 2f;
+                    Quaternion swingTo = _handBaseRot * Quaternion.Euler(120f, 0f, 0f);
+                    handMount.localRotation = Quaternion.Slerp(_handBaseRot, swingTo, t);
+                }
+            }
+            else if (_castT >= 0f)
+            {
+                _castT += dt / Mathf.Max(0.05f, castDuration);
+                if (_castT >= 1f)
+                {
+                    _castT = -1f;
+                    handMount.localRotation = _handBaseRot;
+                }
+                else
+                {
+                    float t = _castT < 0.4f ? _castT / 0.4f : (1f - _castT) / 0.6f;
+                    Quaternion castUp = _handBaseRot * Quaternion.Euler(-70f, 0f, -10f);
+                    handMount.localRotation = Quaternion.Slerp(_handBaseRot, castUp, t);
                 }
             }
         }

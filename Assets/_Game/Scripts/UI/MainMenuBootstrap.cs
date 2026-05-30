@@ -13,7 +13,7 @@ namespace WPG.UI
         {
             GameManager.EnsureExists();
             SettingsManager.EnsureExists();
-            GameAudioManager.EnsureExists();
+            GameAudioManager.EnsureExists().EnterMainMenuMusic();
             GameAssetLoader.LogAssetScanOnce();
         }
 

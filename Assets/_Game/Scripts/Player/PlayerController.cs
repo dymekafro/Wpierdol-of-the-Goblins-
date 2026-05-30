@@ -141,7 +141,10 @@ namespace WPG.Player
 
                 // Skok też blokujemy podczas castowania.
                 if (!IsMovementInputLocked && kb != null && kb.spaceKey.wasPressedThisFrame)
+                {
                     _verticalVel = jumpSpeed;
+                    GameAudioManager.EnsureExists()?.PlayJump(transform.position);
+                }
             }
 
             _verticalVel += gravity * Time.deltaTime;

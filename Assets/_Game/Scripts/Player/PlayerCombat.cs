@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using WPG.Character;
 using WPG.Core;
+using WPG.UI;
 using WPG.World;
 using Invector.vCharacterController;
 
@@ -57,6 +58,7 @@ namespace WPG.Player
 
         public float fireballCooldown = 1.2f;
         public int fireballManaCost = 15;
+        public int fireballManaDiscount = 0; // np. Różdżka Żaru
 
         public float healCooldown = 4f;
         public int healManaCost = 25;
@@ -122,6 +124,9 @@ namespace WPG.Player
             if (_stats != null && _stats.IsDead)
                 return;
 
+            if (BaseUIManager.AnyPanelOpen)
+                return;
+
             var mouse = Mouse.current;
             var kb = Keyboard.current;
 
@@ -157,6 +162,9 @@ namespace WPG.Player
         private void DoMelee()
         {
             _meleeReadyAt = Time.time + meleeCooldown;
+
+            // Wydech/chrząknięcie dojrzałego druida w momencie zamachu (przed trafieniem).
+            GameAudioManager.EnsureExists()?.PlayPunch(transform.position);
 
             TriggerAnimation(attackTriggerName);
 
@@ -225,7 +233,7 @@ namespace WPG.Player
             if (_stats == null)
                 return;
 
-            if (!_stats.TrySpendMana(fireballManaCost))
+            if (!_stats.TrySpendMana(Mathf.Max(0, fireballManaCost - fireballManaDiscount)))
                 return;
 
             _isCastingFireball = true;

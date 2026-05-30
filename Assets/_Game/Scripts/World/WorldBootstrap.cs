@@ -3,6 +3,7 @@ using UnityEngine;
 using WPG.Character;
 using WPG.Core;
 using WPG.Enemies;
+using WPG.Items;
 using WPG.Player;
 using WPG.UI;
 
@@ -41,7 +42,7 @@ namespace WPG.World
         {
             GameManager.EnsureExists();
             SettingsManager.EnsureExists();
-            GameAudioManager.EnsureExists();
+            GameAudioManager.EnsureExists().EnterGameplayMusic();
         }
 
         private void Start()
@@ -73,6 +74,7 @@ namespace WPG.World
             else
             {
                 _base = FindFirstInChildren<DruidBase>(worldRoot);
+                MaterialUpgrader.UpgradeHierarchy(worldRoot);
                 Debug.Log("[WorldBootstrap] Znaleziono istniejący WorldRoot w scenie — pomijam generowanie drugiej mapy.");
             }
 
@@ -135,6 +137,22 @@ namespace WPG.World
 
             if (hp.HasValue)
                 _stats.Init(attrs, hp, mana);
+
+            // 2b. Inventory + UI bazy druida
+            var inventory = _player.GetComponent<Inventory>();
+            if (inventory == null)
+                inventory = _player.AddComponent<Inventory>();
+            inventory.Bind(_stats, combat);
+
+            if (gm != null && gm.isContinuing && gm.pendingLoadData?.inventory != null && gm.pendingLoadData.inventory.Count > 0)
+                inventory.LoadFromSave(gm.pendingLoadData.inventory);
+            else if (inventory.IsEmpty())
+                inventory.GiveStarterItems();
+
+            var baseUI = _player.GetComponent<BaseUIManager>();
+            if (baseUI == null)
+                baseUI = _player.AddComponent<BaseUIManager>();
+            baseUI.Initialize(inventory, _stats, combat);
 
             // 3. HUD
             var hudGO = new GameObject("HUD");

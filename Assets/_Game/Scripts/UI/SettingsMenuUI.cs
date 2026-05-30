@@ -18,8 +18,8 @@ namespace WPG.UI
         private Toggle _invertYToggle;
 
         // Audio
-        private Slider _masterSlider, _musicSlider, _sfxSlider;
-        private Text _masterValue, _musicValue, _sfxValue;
+        private Slider _masterSlider, _musicSlider, _ambientSlider, _sfxSlider;
+        private Text _masterValue, _musicValue, _ambientValue, _sfxValue;
 
         // Grafika
         private OptionCycler _qualityCycler;
@@ -142,8 +142,17 @@ namespace WPG.UI
                 new Vector2(0, 8), new Vector2(0, -8), "MusicSlider");
             _musicValue = AddValueText(rowMu, new Vector2(0.85f, 0f), new Vector2(1f, 1f), "70%");
 
+            // Ambient (otoczenie) — własny suwak, niezależny od muzyki
+            var rowA = AddRow(col, topOffset: -430f);
+            AddLabel(rowA, "Otoczenie");
+            _ambientSlider = UIFactory.CreateSlider(rowA, 0f, 1f, 0.7f,
+                v => OnVolumeChanged(VolumeChannel.Ambient, v),
+                new Vector2(0.42f, 0f), new Vector2(0.84f, 1f),
+                new Vector2(0, 8), new Vector2(0, -8), "AmbientSlider");
+            _ambientValue = AddValueText(rowA, new Vector2(0.85f, 0f), new Vector2(1f, 1f), "70%");
+
             // SFX
-            var rowS = AddRow(col, topOffset: -430f);
+            var rowS = AddRow(col, topOffset: -490f);
             AddLabel(rowS, "Efekty (SFX)");
             _sfxSlider = UIFactory.CreateSlider(rowS, 0f, 1f, 1f,
                 v => OnVolumeChanged(VolumeChannel.Sfx, v),
@@ -303,7 +312,7 @@ namespace WPG.UI
             SettingsManager.Instance.UpdateAndApply(s => s.invertY = v, save: false);
         }
 
-        private enum VolumeChannel { Master, Music, Sfx }
+        private enum VolumeChannel { Master, Music, Ambient, Sfx }
 
         private void OnVolumeChanged(VolumeChannel ch, float v)
         {
@@ -314,6 +323,7 @@ namespace WPG.UI
                 {
                     case VolumeChannel.Master: s.masterVolume = v; break;
                     case VolumeChannel.Music: s.musicVolume = v; break;
+                    case VolumeChannel.Ambient: s.ambientVolume = v; break;
                     case VolumeChannel.Sfx: s.sfxVolume = v; break;
                 }
             }, save: false);
@@ -322,6 +332,7 @@ namespace WPG.UI
             {
                 case VolumeChannel.Master: if (_masterValue != null) _masterValue.text = pct + "%"; break;
                 case VolumeChannel.Music: if (_musicValue != null) _musicValue.text = pct + "%"; break;
+                case VolumeChannel.Ambient: if (_ambientValue != null) _ambientValue.text = pct + "%"; break;
                 case VolumeChannel.Sfx: if (_sfxValue != null) _sfxValue.text = pct + "%"; break;
             }
         }
@@ -372,9 +383,11 @@ namespace WPG.UI
 
             if (_masterSlider != null) _masterSlider.SetValueWithoutNotify(s.masterVolume);
             if (_musicSlider != null) _musicSlider.SetValueWithoutNotify(s.musicVolume);
+            if (_ambientSlider != null) _ambientSlider.SetValueWithoutNotify(s.ambientVolume);
             if (_sfxSlider != null) _sfxSlider.SetValueWithoutNotify(s.sfxVolume);
             if (_masterValue != null) _masterValue.text = Mathf.RoundToInt(s.masterVolume * 100f) + "%";
             if (_musicValue != null) _musicValue.text = Mathf.RoundToInt(s.musicVolume * 100f) + "%";
+            if (_ambientValue != null) _ambientValue.text = Mathf.RoundToInt(s.ambientVolume * 100f) + "%";
             if (_sfxValue != null) _sfxValue.text = Mathf.RoundToInt(s.sfxVolume * 100f) + "%";
 
             if (_qualityCycler != null) _qualityCycler.SetIndex(Mathf.Clamp(s.qualityLevel, 0, QualityOptions.Length - 1), notify: false);

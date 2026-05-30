@@ -1,0 +1,37 @@
+Wpierdol of the Goblins — SFX attribution
+==========================================
+
+Wszystkie dźwięki poniżej są darmowe do użytku komercyjnego.
+Wpisy CC-BY WYMAGAJĄ atrybucji (zachowaj ten plik w projekcie / na ekranie creditsów).
+Wpisy Mixkit / CC0 nie wymagają atrybucji, ale podajemy ją dla porządku.
+
+footstep_grass_1.wav   (krok 1 — trawa/leśne podłoże)
+footstep_grass_2.wav   (krok 2 — cięższy krok na trawie)
+  Source  : Mixkit — "Grass step" (#1920) oraz "Heavy grass step" (#1922)
+            https://mixkit.co/free-sound-effects/footsteps/
+  License : Mixkit Free Sound Effects License (darmowe komercyjnie, bez atrybucji)
+            https://mixkit.co/license/#sfxFree
+
+jump_grunt.wav   (skok — krótki wydech/chrząknięcie dojrzałego mężczyzny "hszyy"; INNE niż punch_grunt.wav)
+  Source  : Mixkit — "Fighting man voice" (#2172)
+            https://mixkit.co/free-sound-effects/man/
+  License : Mixkit Free Sound Effects License
+            https://mixkit.co/license/#sfxFree
+
+fall_woosh.wav   (długi spadek — szelest powietrza/płaszcza; dawniej jump.wav)
+  Source  : Mixkit — "Air woosh" (#1489)
+            https://mixkit.co/free-sound-effects/whoosh/
+  License : Mixkit Free Sound Effects License
+            https://mixkit.co/license/#sfxFree
+
+punch_grunt.wav   (cios pięścią — wydech/chrząknięcie dojrzałego mężczyzny ~40 lat)
+  Source  : Mixkit — "Effort man voice" (#2170)
+            https://mixkit.co/free-sound-effects/man/
+  License : Mixkit Free Sound Effects License
+            https://mixkit.co/license/#sfxFree
+
+goblin_hop.ogg   (podskok/odbicie goblina)
+  Source  : "Cartoony Jump and Bounce" (apricotjumpbounce-sheepbounce2.ogg)
+            https://opengameart.org/content/cartoony-jump-and-bounce
+  Origin  : Yo Frankie! (c) 2008, Blender Foundation, www.blender.org
+  License : CC-BY 3.0  (https://creativecommons.org/licenses/by/3.0/)

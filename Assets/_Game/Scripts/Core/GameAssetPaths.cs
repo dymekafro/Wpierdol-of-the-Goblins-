@@ -85,6 +85,24 @@ namespace WPG.Core
             "Assets/Modern RPG Icons/Icons/heal.png",
         };
 
+        public static readonly string[] IconHerb =
+        {
+            "Assets/Modern RPG icons/Icons/herb.png",
+            "Assets/Modern RPG icons/Icons/leaf.png",
+            "Assets/Modern RPG icons/Icons/plant.png",
+            "Assets/Modern RPG icons/Icons/mushroom.png",
+            "Assets/Modern RPG Icons/Icons/herb.png",
+        };
+
+        public static readonly string[] IconAmulet =
+        {
+            "Assets/Modern RPG icons/Icons/amulet.png",
+            "Assets/Modern RPG icons/Icons/ring.png",
+            "Assets/Modern RPG icons/Icons/necklace.png",
+            "Assets/Modern RPG icons/Icons/relic.png",
+            "Assets/Modern RPG Icons/Icons/amulet.png",
+        };
+
         // --- Basic RPG Sounds ---
         public static readonly string[] SfxHit =
         {
@@ -123,11 +141,61 @@ namespace WPG.Core
 
         public static readonly string[] SfxFootstep =
         {
+            "Assets/_Game/Audio/SFX/footstep_grass_1.wav",
             "Assets/Basic RPG Sounds/footstep.wav",
             "Assets/Basic RPG Sounds/footstep_grass.wav",
             "Assets/Basic RPG Sounds/SFX/footstep.wav",
             "Assets/Basic RPG Sounds/walk_grass.wav",
         };
+
+        public static readonly string[] SfxFootstep2 =
+        {
+            "Assets/_Game/Audio/SFX/footstep_grass_2.wav",
+        };
+
+        // Skok gracza — krótki wydech/chrząknięcie dojrzałego mężczyzny ("hszyy", Mixkit "Fighting man voice").
+        public static readonly string[] SfxJump =
+        {
+            "Assets/_Game/Audio/SFX/jump_grunt.wav",
+        };
+
+        // Długi spadek (dłużej niż zwykły skok) — szelest powietrza/płaszcza (Mixkit "Air woosh", dawne jump.wav).
+        public static readonly string[] SfxFallWoosh =
+        {
+            "Assets/_Game/Audio/SFX/fall_woosh.wav",
+        };
+
+        // Podskok/odbicie goblina (CC-BY 3.0, Yo Frankie! / Blender Foundation).
+        public static readonly string[] SfxGoblinHop =
+        {
+            "Assets/_Game/Audio/SFX/goblin_hop.ogg",
+        };
+
+        // Chrząknięcie/wydech gracza przy ciosie pięścią (dojrzały mężczyzna ~40 lat).
+        public static readonly string[] SfxPunch =
+        {
+            "Assets/_Game/Audio/SFX/punch_grunt.wav",
+        };
+
+        // --- Muzyka (warstwy) — import usera do Assets/_Game/Audio/Music/ ---
+        public static readonly string[] MusicSoundtrack =
+        {
+            "Assets/_Game/Audio/Music/SOUNDTRACK.wav",
+        };
+
+        public static readonly string[] MusicMenu =
+        {
+            "Assets/_Game/Audio/Music/MENU.wav",
+        };
+
+        public static readonly string[] MusicAmbient =
+        {
+            "Assets/_Game/Audio/Music/AMBIENT.wav",
+        };
+
+        public const string ResMusicSoundtrack = "Audio/Music/SOUNDTRACK";
+        public const string ResMusicMenu = "Audio/Music/MENU";
+        public const string ResMusicAmbient = "Audio/Music/AMBIENT";
 
         // Resources fallback (user może skopiować klipy/sprites do Resources/)
         public const string ResUiPanel = "UI/panel";
@@ -140,12 +208,19 @@ namespace WPG.Core
         public const string ResIconMelee = "UI/icon_sword";
         public const string ResIconFire = "UI/icon_fire";
         public const string ResIconHeal = "UI/icon_heal";
+        public const string ResIconHerb = "UI/icon_herb";
+        public const string ResIconAmulet = "UI/icon_amulet";
         public const string ResSfxHit = "Audio/hit";
         public const string ResSfxDeath = "Audio/death";
         public const string ResSfxClick = "Audio/ui_click";
         public const string ResSfxFireball = "Audio/fireball";
         public const string ResSfxCast = "Audio/fireball";
         public const string ResSfxFootstep = "Audio/footstep";
+        public const string ResSfxFootstep2 = "Audio/SFX/footstep_grass_2";
+        public const string ResSfxJump = "Audio/SFX/jump_grunt";
+        public const string ResSfxFallWoosh = "Audio/SFX/fall_woosh";
+        public const string ResSfxGoblinHop = "Audio/SFX/goblin_hop";
+        public const string ResSfxPunch = "Audio/SFX/punch_grunt";
 
         // --- Świat (Agent B) — import usera; skan fallback w GameAssetRegistry ---
         public static readonly string[] WorldTrees =
@@ -248,6 +323,16 @@ namespace WPG.Core
         public const string FantasyGoblinArcherPrefab = "Assets/Goblin/Prefab/skin2.prefab";
         public const string FantasyGoblinElitePrefab = "Assets/Goblin/Prefab/skin3.prefab";
 
+        public const string GoblinBodyMaterialSkin1 = "Assets/Goblin/Materials/skin1/gobs_body.mat";
+        public const string GoblinPartsMaterialSkin1 = "Assets/Goblin/Materials/skin1/gobs_parts.mat";
+        public const string GoblinBodyMaterialSkin2 = "Assets/Goblin/Materials/skin2/gobs_body.mat";
+        public const string GoblinPartsMaterialSkin2 = "Assets/Goblin/Materials/skin2/gobs_parts.mat";
+
+        public const string WPGFireGlowMaterial = "Assets/_Game/Materials/Fixups/WPG_FireGlow.mat";
+        public const string WPGMushroomGlowMaterial = "Assets/_Game/Materials/Fixups/WPG_MushroomGlow.mat";
+        public const string WPGMushroomStemMaterial = "Assets/_Game/Materials/Fixups/WPG_MushroomStem.mat";
+        public const string WPGSmokeMaterial = "Assets/_Game/Materials/Fixups/WPG_Smoke.mat";
+
         public static readonly string[] GoblinModel =
         {
             FantasyGoblinMeleePrefab,
@@ -299,6 +384,12 @@ namespace WPG.Core
 
         public const string InvectorLocomotionController =
             "Assets/Invector-3rdPersonController_LITE/Animator/Invector@BasicLocomotion.controller";
+
+        // Runtime/build fallback (Resources.Load) dla animacji goblinów.
+        // Skopiuj controller do Assets/_Game/Resources/Anim/InvectorBasicLocomotion.controller
+        // oraz (opcjonalnie) avatar do Assets/_Game/Resources/Anim/GoblinHumanoidAvatar.asset.
+        public const string ResLocomotionController = "Anim/InvectorBasicLocomotion";
+        public const string ResGoblinAvatar = "Anim/GoblinHumanoidAvatar";
 
         public static readonly string[] InvectorCharacter =
         {

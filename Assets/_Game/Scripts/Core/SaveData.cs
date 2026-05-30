@@ -20,6 +20,13 @@ namespace WPG.Core
     }
 
     [Serializable]
+    public class ItemStackSave
+    {
+        public string itemId;
+        public int quantity;
+    }
+
+    [Serializable]
     public class SaveData
     {
         public int saveVersion = 1;
@@ -33,6 +40,7 @@ namespace WPG.Core
         public bool hasPosition;
         public List<CampSaveEntry> camps = new List<CampSaveEntry>();
         public List<string> visitedPowerSites = new List<string>();
+        public List<ItemStackSave> inventory = new List<ItemStackSave>();
         public string lastZoneName = "Sady Ostatniego Strażnika";
         public string saveTimestamp = "";
 

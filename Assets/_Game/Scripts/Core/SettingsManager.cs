@@ -154,6 +154,7 @@ namespace WPG.Core
             Settings.mouseSensitivity = Mathf.Clamp(Settings.mouseSensitivity, SettingsData.MinSensitivity, SettingsData.MaxSensitivity);
             Settings.masterVolume = Mathf.Clamp01(Settings.masterVolume);
             Settings.musicVolume = Mathf.Clamp01(Settings.musicVolume);
+            Settings.ambientVolume = Mathf.Clamp01(Settings.ambientVolume);
             Settings.sfxVolume = Mathf.Clamp01(Settings.sfxVolume);
 
             // Snap FPS do listy znanych wartości

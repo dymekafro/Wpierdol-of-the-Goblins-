@@ -43,7 +43,10 @@ namespace WPG.Core
             LogAudioGroup(sb, "Basic RPG Sounds — death", GameAssetPaths.SfxDeath, GameAssetPaths.ResSfxDeath);
             LogAudioGroup(sb, "Basic RPG Sounds — UI click", GameAssetPaths.SfxUIClick, GameAssetPaths.ResSfxClick);
             LogAudioGroup(sb, "Basic RPG Sounds — fireball", GameAssetPaths.SfxFireball, GameAssetPaths.ResSfxFireball);
-            LogAudioGroup(sb, "Basic RPG Sounds — footstep", GameAssetPaths.SfxFootstep, GameAssetPaths.ResSfxFootstep);
+            LogAudioGroup(sb, "Movement SFX — footstep", GameAssetPaths.SfxFootstep, GameAssetPaths.ResSfxFootstep);
+            LogAudioGroup(sb, "Movement SFX — jump", GameAssetPaths.SfxJump, GameAssetPaths.ResSfxJump);
+            LogAudioGroup(sb, "Movement SFX — goblin hop", GameAssetPaths.SfxGoblinHop, GameAssetPaths.ResSfxGoblinHop);
+            LogAudioGroup(sb, "Combat SFX — punch grunt", GameAssetPaths.SfxPunch, GameAssetPaths.ResSfxPunch);
 
             Debug.Log(sb.ToString());
         }

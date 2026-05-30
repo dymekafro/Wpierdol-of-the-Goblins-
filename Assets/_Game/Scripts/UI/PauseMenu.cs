@@ -26,6 +26,9 @@ namespace WPG.UI
             var kb = Keyboard.current;
             if (kb != null && kb.escapeKey.wasPressedThisFrame)
             {
+                if (BaseUIManager.TryCloseActivePanel())
+                    return;
+
                 // ESC w panelu ustawień zamyka tylko ustawienia (nie wraca do gry).
                 if (_settingsMenu != null && _settingsMenu.IsOpen)
                 {
@@ -92,6 +95,7 @@ namespace WPG.UI
             Time.timeScale = 0f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            if (GameAudioManager.Instance != null) GameAudioManager.Instance.SetMenuLayerActive(true);
         }
 
         public void Close()
@@ -102,6 +106,7 @@ namespace WPG.UI
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            if (GameAudioManager.Instance != null) GameAudioManager.Instance.SetMenuLayerActive(false);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace WPG.Enemies
         public float detectRange = 14f;
         public float loseRange = 22f;
         public float attackCooldown = 1.2f;
+        public float hopSoundInterval = 0.45f;
         public Color baseColor = new Color(0.45f, 0.55f, 0.25f);
         public float scale = 0.85f;
 
@@ -63,11 +64,26 @@ namespace WPG.Enemies
                 var p = GameObject.FindGameObjectWithTag("Player");
                 if (p != null) target = p.transform;
             }
+
+            _movedThisFrame = false;
             UpdateAI();
             UpdateHealthBar();
 
-            _currentMoveSpeed = Mathf.MoveTowards(_currentMoveSpeed, 0f, moveSpeed * Time.deltaTime * 4f);
-            if (AnimDriver != null) AnimDriver.SetSpeed(_currentMoveSpeed, moveSpeed);
+            if (!_movedThisFrame)
+                _currentMoveSpeed = Mathf.MoveTowards(_currentMoveSpeed, 0f, moveSpeed * Time.deltaTime * 6f);
+
+            // Podskakiwanie goblina podczas ruchu — cykliczny dźwięk odbicia.
+            if (_movedThisFrame && Time.time >= _nextHopAt)
+            {
+                _nextHopAt = Time.time + hopSoundInterval;
+                GameAudioManager.EnsureExists()?.PlayGoblinHop(transform.position);
+            }
+
+            if (AnimDriver != null)
+            {
+                AnimDriver.SetSpeed(_currentMoveSpeed, moveSpeed);
+                AnimDriver.SetGrounded(true);
+            }
         }
 
         protected abstract void UpdateAI();
@@ -110,6 +126,7 @@ namespace WPG.Enemies
             }
 
             _currentMoveSpeed = moveSpeed * speedMult;
+            _movedThisFrame = true;
         }
 
         public void ReceiveDamage(int amount, Vector3 hitPoint)
@@ -191,7 +208,10 @@ namespace WPG.Enemies
         /// <summary>Wysokość modelu względem gracza (~0.8–1.0).</summary>
         protected virtual float ModelHeightMultiplier => 1.65f;
 
-        protected virtual float ModelScaleMultiplier => 1f;
+        protected virtual float ModelScaleMultiplier => WorldAssetPlacer.GoblinCharacterModelScale;
+
+        bool _movedThisFrame;
+        float _nextHopAt;
 
         protected virtual void BuildVisual()
         {
@@ -199,6 +219,19 @@ namespace WPG.Enemies
             var kind = AssetModelKind;
             WorldAssetPlacer.CharacterAttachResult attach = default;
             float targetHeight = scale * ModelHeightMultiplier;
+
+            if (TryWireEmbeddedGoblinModel(kind, targetHeight, out attach))
+            {
+                VisualFromAsset = true;
+                Renderers = GetComponentsInChildren<Renderer>();
+                OnFantasyGoblinAttached(attach);
+                var cap = gameObject.AddComponent<CapsuleCollider>();
+                cap.height = targetHeight;
+                cap.radius = scale * 0.4f * WorldAssetPlacer.GoblinCharacterModelScale;
+                cap.center = new Vector3(0f, targetHeight * 0.5f, 0f);
+                return;
+            }
+
             if (kind.HasValue && WorldAssetPlacer.TryAttachCharacterModel(
                     transform, kind.Value, targetHeight, out attach, ModelScaleMultiplier, baseColor))
             {
@@ -207,7 +240,9 @@ namespace WPG.Enemies
                 Debug.Log($"[GoblinBase] Attached Fantasy Goblin: {attach.PrefabPath}");
                 if (!attach.AnimatorOk)
                     Debug.Log($"[GoblinBase] Animator: brak controllera — proceduralna animacja (rig bones)");
-                if (AnimDriver != null)
+                if (AnimDriver != null && attach.ModelRoot != null)
+                    GoblinAnimSetup.WireDriver(transform, attach.ModelRoot, AnimDriver);
+                else if (AnimDriver != null)
                 {
                     if (attach.BodyPivot != null) AnimDriver.bodyPivot = attach.BodyPivot;
                     else if (attach.ModelRoot != null) AnimDriver.bodyPivot = attach.ModelRoot;
@@ -221,7 +256,7 @@ namespace WPG.Enemies
                 OnFantasyGoblinAttached(attach);
                 var cap = gameObject.AddComponent<CapsuleCollider>();
                 cap.height = targetHeight;
-                cap.radius = scale * 0.4f;
+                cap.radius = scale * 0.4f * WorldAssetPlacer.GoblinCharacterModelScale;
                 cap.center = new Vector3(0f, targetHeight * 0.5f, 0f);
                 return;
             }
@@ -229,6 +264,70 @@ namespace WPG.Enemies
             string missReason = kind.HasValue ? attach.FailureReason : "brak AssetModelKind";
             Debug.LogWarning($"[GoblinBase] FALLBACK placeholder — reason: {missReason}");
             BuildPlaceholderVisual();
+        }
+
+        bool TryWireEmbeddedGoblinModel(WorldAssetPlacer.CharacterModelKind? kind, float targetHeight, out WorldAssetPlacer.CharacterAttachResult attach)
+        {
+            attach = default;
+            if (!kind.HasValue) return false;
+
+            var skinned = GetComponentInChildren<SkinnedMeshRenderer>(true);
+            if (skinned == null) return false;
+
+            var modelRoot = FindGoblinModelRoot(skinned.transform);
+            if (modelRoot == null) return false;
+
+            MaterialUpgrader.UpgradeHierarchy(modelRoot.gameObject);
+            GoblinAnimSetup.EnsureAnimator(modelRoot);
+            GoblinAnimSetup.WireDriver(transform, modelRoot, AnimDriver);
+
+            float currentHeight = ComputeRendererHeight(modelRoot);
+            if (currentHeight > 0.01f)
+            {
+                float scaleFactor = (targetHeight / currentHeight) * ModelScaleMultiplier;
+                modelRoot.localScale *= scaleFactor;
+            }
+            else
+            {
+                modelRoot.localScale *= ModelScaleMultiplier;
+            }
+
+            attach.Success = true;
+            attach.ModelRoot = modelRoot;
+            attach.PrefabPath = "embedded/WorldRoot";
+            attach.ModelSource = "EmbeddedGoblin";
+            var animator = modelRoot.GetComponent<Animator>();
+            attach.AnimatorOk = animator != null && animator.runtimeAnimatorController != null;
+            attach.AnimatorStatus = attach.AnimatorOk ? "OK (embedded + Invector)" : "procedural rig";
+            return true;
+        }
+
+        static Transform FindGoblinModelRoot(Transform skinnedTransform)
+        {
+            foreach (var t in skinnedTransform.GetComponentsInParent<Transform>(true))
+            {
+                if (t.name.Equals("root", StringComparison.OrdinalIgnoreCase) && t.parent != null)
+                    return t.parent;
+            }
+
+            var walk = skinnedTransform;
+            while (walk.parent != null)
+            {
+                if (walk.parent.GetComponent<GoblinBase>() != null)
+                    return walk;
+                walk = walk.parent;
+            }
+
+            return skinnedTransform.parent != null ? skinnedTransform.parent : skinnedTransform;
+        }
+
+        static float ComputeRendererHeight(Transform modelRoot)
+        {
+            var renderers = modelRoot.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return 0f;
+            var bounds = renderers[0].bounds;
+            foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+            return bounds.size.y;
         }
 
         /// <summary>Hook po podpięciu Fantasy Goblin (broń, dodatkowy tint itd.).</summary>
@@ -262,6 +361,7 @@ namespace WPG.Enemies
         protected void BuildPlaceholderVisual()
         {
             EnsureAnimDriver();
+            float s = scale * WorldAssetPlacer.GoblinCharacterModelScale;
 
             var pivot = new GameObject("BodyPivot").transform;
             pivot.SetParent(transform, false);
@@ -279,24 +379,24 @@ namespace WPG.Enemies
             var torso = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             torso.name = "Torso";
             torso.transform.SetParent(pivot, false);
-            torso.transform.localScale = new Vector3(scale * 0.78f, scale * 0.5f, scale * 0.55f);
-            torso.transform.localPosition = new Vector3(0f, scale * 1.05f, 0f);
+            torso.transform.localScale = new Vector3(s * 0.78f, s * 0.5f, s * 0.55f);
+            torso.transform.localPosition = new Vector3(0f, s * 1.05f, 0f);
             DestroyCol(torso);
             torso.GetComponent<MeshRenderer>().sharedMaterial = torsoMat;
 
             var hips = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             hips.name = "Hips";
             hips.transform.SetParent(pivot, false);
-            hips.transform.localScale = new Vector3(scale * 0.7f, scale * 0.3f, scale * 0.55f);
-            hips.transform.localPosition = new Vector3(0f, scale * 0.75f, 0f);
+            hips.transform.localScale = new Vector3(s * 0.7f, s * 0.3f, s * 0.55f);
+            hips.transform.localPosition = new Vector3(0f, s * 0.75f, 0f);
             DestroyCol(hips);
             hips.GetComponent<MeshRenderer>().sharedMaterial = loinMat;
 
             var head = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             head.name = "Head";
             head.transform.SetParent(pivot, false);
-            head.transform.localScale = new Vector3(scale * 0.45f, scale * 0.45f, scale * 0.5f);
-            head.transform.localPosition = new Vector3(0f, scale * 1.6f, scale * 0.02f);
+            head.transform.localScale = new Vector3(s * 0.45f, s * 0.45f, s * 0.5f);
+            head.transform.localPosition = new Vector3(0f, s * 1.6f, s * 0.02f);
             DestroyCol(head);
             head.GetComponent<MeshRenderer>().sharedMaterial = skinMat;
 
@@ -319,26 +419,26 @@ namespace WPG.Enemies
             earR.GetComponent<MeshRenderer>().sharedMaterial = skinMat;
 
             EyeMat = MaterialFactory.Get(new Color(1f, 0.1f, 0.1f), 0.3f, new Color(1f, 0.1f, 0.1f), 3f);
-            BuildEye(scale, EyeMat, new Vector3(-0.08f, scale * 1.62f, scale * 0.22f));
-            BuildEye(scale, EyeMat, new Vector3(0.08f, scale * 1.62f, scale * 0.22f));
+            BuildEye(s, EyeMat, new Vector3(-0.08f, s * 1.62f, s * 0.22f));
+            BuildEye(s, EyeMat, new Vector3(0.08f, s * 1.62f, s * 0.22f));
 
-            var leftArm = BuildLimb(pivot, "LeftArm", new Vector3(-scale * 0.45f, scale * 1.25f, 0f),
-                new Vector3(scale * 0.18f, scale * 0.30f, scale * 0.18f), new Vector3(0f, -scale * 0.30f, 0f), limbMat);
-            var rightArm = BuildLimb(pivot, "RightArm", new Vector3(scale * 0.45f, scale * 1.25f, 0f),
-                new Vector3(scale * 0.18f, scale * 0.30f, scale * 0.18f), new Vector3(0f, -scale * 0.30f, 0f), limbMat);
-            var leftLeg = BuildLimb(pivot, "LeftLeg", new Vector3(-scale * 0.18f, scale * 0.55f, 0f),
-                new Vector3(scale * 0.20f, scale * 0.32f, scale * 0.20f), new Vector3(0f, -scale * 0.32f, 0f), limbMat);
-            var rightLeg = BuildLimb(pivot, "RightLeg", new Vector3(scale * 0.18f, scale * 0.55f, 0f),
-                new Vector3(scale * 0.20f, scale * 0.32f, scale * 0.20f), new Vector3(0f, -scale * 0.32f, 0f), limbMat);
+            var leftArm = BuildLimb(pivot, "LeftArm", new Vector3(-s * 0.45f, s * 1.25f, 0f),
+                new Vector3(s * 0.18f, s * 0.30f, s * 0.18f), new Vector3(0f, -s * 0.30f, 0f), limbMat);
+            var rightArm = BuildLimb(pivot, "RightArm", new Vector3(s * 0.45f, s * 1.25f, 0f),
+                new Vector3(s * 0.18f, s * 0.30f, s * 0.18f), new Vector3(0f, -s * 0.30f, 0f), limbMat);
+            var leftLeg = BuildLimb(pivot, "LeftLeg", new Vector3(-s * 0.18f, s * 0.55f, 0f),
+                new Vector3(s * 0.20f, s * 0.32f, s * 0.20f), new Vector3(0f, -s * 0.32f, 0f), limbMat);
+            var rightLeg = BuildLimb(pivot, "RightLeg", new Vector3(s * 0.18f, s * 0.55f, 0f),
+                new Vector3(s * 0.20f, s * 0.32f, s * 0.20f), new Vector3(0f, -s * 0.32f, 0f), limbMat);
 
             var handMount = new GameObject("HandMount").transform;
             handMount.SetParent(rightArm, false);
-            handMount.localPosition = new Vector3(0f, -scale * 0.55f, scale * 0.1f);
+            handMount.localPosition = new Vector3(0f, -s * 0.55f, s * 0.1f);
 
             var cap = gameObject.AddComponent<CapsuleCollider>();
-            cap.height = scale * 1.8f;
-            cap.radius = scale * 0.4f;
-            cap.center = new Vector3(0f, scale * 0.9f, 0f);
+            cap.height = s * 1.8f;
+            cap.radius = s * 0.4f;
+            cap.center = new Vector3(0f, s * 0.9f, 0f);
 
             Renderers = GetComponentsInChildren<Renderer>();
 
@@ -391,9 +491,10 @@ namespace WPG.Enemies
 
         protected void BuildHealthBar()
         {
+            float barHeight = scale * WorldAssetPlacer.GoblinCharacterModelScale * 2.2f;
             var root = new GameObject("HealthBar");
             root.transform.SetParent(transform, false);
-            root.transform.localPosition = new Vector3(0f, scale * 2.2f, 0f);
+            root.transform.localPosition = new Vector3(0f, barHeight, 0f);
 
             var bg = GameObject.CreatePrimitive(PrimitiveType.Cube);
             bg.transform.SetParent(root.transform, false);

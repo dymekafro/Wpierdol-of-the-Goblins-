@@ -9,6 +9,7 @@ namespace WPG.World
     {
         private static readonly Dictionary<string, Material> Cache = new Dictionary<string, Material>();
         private static Shader _litShader;
+        private static Shader _particleShader;
 
         public const float DefaultGroundTile = 7f;
         public const float PathTile = 8f;
@@ -34,6 +35,43 @@ namespace WPG.World
                     _litShader = Shader.Find("Standard");
                 return _litShader;
             }
+        }
+
+        private static Shader ParticleShader
+        {
+            get
+            {
+                if (_particleShader == null)
+                    _particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+                if (_particleShader == null)
+                    _particleShader = Shader.Find("Particles/Standard Unlit");
+                return _particleShader;
+            }
+        }
+
+        /// <summary>URP particle material (dym, iskry) — przezroczysty Unlit.</summary>
+        public static Material GetParticle(Color color)
+        {
+            string key = $"part_{color.r:F2}_{color.g:F2}_{color.b:F2}_{color.a:F2}";
+            if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
+
+            var shader = ParticleShader ?? LitShader;
+            var mat = new Material(shader);
+            mat.name = "WPG_Particle_" + key;
+
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+            else if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
+            else mat.color = color;
+
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_Blend")) mat.SetFloat("_Blend", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+
+            Cache[key] = mat;
+            return mat;
         }
 
         /// <summary>Główna płaszczyzna lasu — stały ciemnozielony (bez tekstury trawy = brak pomarańczy).</summary>

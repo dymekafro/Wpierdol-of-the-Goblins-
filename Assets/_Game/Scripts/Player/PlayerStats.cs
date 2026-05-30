@@ -19,6 +19,7 @@ namespace WPG.Player
         public bool IsDead { get; private set; }
 
         public float manaRegenBonus = 0f; // np. obozy Captured
+        public float relicManaRegenBonus = 0f; // relikwie z ekwipunku
 
         private float _baseRegenTimer;
 
@@ -37,7 +38,7 @@ namespace WPG.Player
             if (IsDead) return;
             if (currentMana < attributes.MaxMana)
             {
-                currentMana += (attributes.ManaRegenPerSecond + manaRegenBonus) * Time.deltaTime;
+                currentMana += (attributes.ManaRegenPerSecond + manaRegenBonus + relicManaRegenBonus) * Time.deltaTime;
                 if (currentMana > attributes.MaxMana) currentMana = attributes.MaxMana;
                 OnManaChanged?.Invoke(Mathf.RoundToInt(currentMana), attributes.MaxMana);
             }

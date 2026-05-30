@@ -22,13 +22,17 @@ namespace WPG.World
         private Transform _playerT;
 
         public static event Action OnGameSaved;
+        public static event Action OnPlayerEnter;
+        public static event Action OnPlayerExit;
 
         public bool IsPlayerInside => _playerInside;
+        public static bool IsPlayerInsideStatic { get; private set; }
 
         private void OnTriggerEnter(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _playerInside = true;
+            IsPlayerInsideStatic = true;
             _playerStats = other.GetComponent<PlayerStats>();
             _playerT = other.transform;
             WorldZone.RaiseExternal(zoneName);
@@ -39,15 +43,18 @@ namespace WPG.World
                 _playerStats.RestoreMana(_playerStats.attributes.MaxMana);
             }
             TrySave();
+            OnPlayerEnter?.Invoke();
         }
 
         private void OnTriggerExit(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _playerInside = false;
+            IsPlayerInsideStatic = false;
             _playerStats = null;
             _playerT = null;
             WorldZone.RaiseExternal("Magiczny Las");
+            OnPlayerExit?.Invoke();
         }
 
         private void Update()

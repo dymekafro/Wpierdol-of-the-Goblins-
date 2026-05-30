@@ -238,6 +238,8 @@ namespace WPG.World
 
             foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
                 UpgradeRenderer(renderer);
+
+            MissingMaterialFixer.FixNullMaterials(root);
         }
 
         private static void UpgradeRenderer(Renderer renderer)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using WPG.Character;
 using WPG.Core;
+using WPG.Enemies;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -439,6 +440,8 @@ namespace WPG.World
 
         public const float DefaultCharacterModelScale = 1f;
         public const float PlayerCharacterModelScale = 1.3f;
+        /// <summary>Gobliny o ~30% większe niż poprzedni default.</summary>
+        public const float GoblinCharacterModelScale = 1.3f;
 
         static readonly Dictionary<CharacterModelKind, string> ResolvedCharacterPaths = new();
         static readonly Dictionary<VfxKind, string> ResolvedVfxPaths = new();
@@ -552,6 +555,11 @@ namespace WPG.World
             result.AppliedScale = instance.transform.localScale.x;
             result.ModelRoot = instance.transform;
             WireGoblinRigBones(kind, instance.transform, ref result);
+            if (kind == CharacterModelKind.GoblinMelee || kind == CharacterModelKind.GoblinArcher || kind == CharacterModelKind.GoblinElite)
+            {
+                GoblinAnimSetup.EnsureAnimator(instance.transform);
+                if (animator == null) animator = instance.GetComponentInChildren<Animator>();
+            }
             result.HandMount = result.HandMount
                 ?? FindCharacterBone(instance.transform, "Hand_R", "RightHand", "hand_r", "mixamorig:RightHand", "VBOT_:RightHand")
                 ?? FindHandMountFallback(instance.transform);
@@ -657,18 +665,6 @@ namespace WPG.World
             if (animator == null) return;
             animator.applyRootMotion = false;
 
-#if UNITY_EDITOR
-            if (animator.runtimeAnimatorController == null && animator.avatar != null)
-            {
-                var invectorCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(GameAssetPaths.InvectorLocomotionController);
-                if (invectorCtrl != null)
-                {
-                    animator.runtimeAnimatorController = invectorCtrl;
-                    Debug.Log($"[WorldAssetPlacer] Przypisano Invector locomotion controller do {DescribeModelSource(prefabPath)}");
-                }
-            }
-#endif
-
             var driver = root.GetComponent<CharacterAnimDriver>();
             if (driver == null) return;
             driver.animator = animator;
@@ -678,7 +674,9 @@ namespace WPG.World
             {
                 driver.ConfigureForInvectorLocomotion();
             }
-            var body = FindDeepChildBone(animator.transform, "Base Character Root");
+
+            var body = FindDeepChildBone(animator.transform, "spine_02")
+                       ?? FindDeepChildBone(animator.transform, "Base Character Root");
             driver.bodyPivot = body != null ? body : animator.transform;
         }
 

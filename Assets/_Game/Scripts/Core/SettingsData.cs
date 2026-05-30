@@ -15,6 +15,7 @@ namespace WPG.Core
         // Audio (0..1)
         public float masterVolume = 0.8f;
         public float musicVolume = 0.7f;
+        public float ambientVolume = 0.7f; // warstwa otoczenia (gra w rozgrywce), niezależna od muzyki
         public float sfxVolume = 1.0f;
 
         // Grafika
@@ -47,6 +48,7 @@ namespace WPG.Core
             invertY = other.invertY;
             masterVolume = other.masterVolume;
             musicVolume = other.musicVolume;
+            ambientVolume = other.ambientVolume;
             sfxVolume = other.sfxVolume;
             fullscreen = other.fullscreen;
             vSync = other.vSync;

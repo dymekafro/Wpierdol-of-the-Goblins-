@@ -924,11 +924,11 @@ PlayerSettings:
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
-  cloudProjectId: e2b90b45-a8fb-412c-8f05-00325cfb409a
+  cloudProjectId: b15e5ea9-2ff7-4ef7-9883-988bd20548f9
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: RPG ADVENTURE XD
-  organizationId: damian21111999
+  projectName: Setup Guide In-Editor Tutorial
+  organizationId: unity_b5be684b3ab23445ce41
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WPG.Character;
+using WPG.Items;
 
 namespace WPG.Core
 {
@@ -142,6 +143,11 @@ namespace WPG.Core
                 data.camps.Add(new CampSaveEntry { campId = kv.Key, state = kv.Value });
             foreach (var id in visitedPowerSites)
                 data.visitedPowerSites.Add(id);
+
+            var inv = Object.FindAnyObjectByType<Inventory>();
+            if (inv != null)
+                data.inventory = inv.ToSaveList();
+
             return data;
         }
     }

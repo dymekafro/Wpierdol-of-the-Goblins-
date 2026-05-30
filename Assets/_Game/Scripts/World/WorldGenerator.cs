@@ -437,7 +437,7 @@ namespace WPG.World
             smokeGO.transform.localPosition = new Vector3(0f, 1f, 0f);
             var ps = smokeGO.AddComponent<ParticleSystem>();
             var psr = smokeGO.GetComponent<ParticleSystemRenderer>();
-            psr.material = MaterialFactory.Get(new Color(0.4f, 0.35f, 0.3f));
+            psr.material = MaterialFactory.GetParticle(new Color(0.3f, 0.25f, 0.2f, 0.55f));
             var main = ps.main;
             main.startLifetime = 4f;
             main.startSpeed = 1.5f;
