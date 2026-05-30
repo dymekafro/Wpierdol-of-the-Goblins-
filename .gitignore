@@ -5,3 +5,6 @@
 [Ll]ogs/
 UserSettings/
 MemoryCaptures/
+# Music source WAVs are kept off git (use OGG instead, see GameAssetPaths.cs)
+Assets/_Game/Audio/Music/*.wav
+Assets/_Game/Audio/Music/*.wav.meta
