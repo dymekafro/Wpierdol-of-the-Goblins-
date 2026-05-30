@@ -199,8 +199,13 @@ namespace WPG.World
                 WorldZone.RaiseExternal("Sady Ostatniego Strażnika");
             }
 
-            int campCount = _generator != null && _generator.Camps != null ? _generator.Camps.Count : 0;
-            int powerSiteCount = _generator != null && _generator.PowerSites != null ? _generator.PowerSites.Count : 0;
+            // Świat z prefabu (scene) nie ma generatora — liczymy faktyczne komponenty w hierarchii.
+            int campCount = _generator != null && _generator.Camps != null
+                ? _generator.Camps.Count
+                : (worldRoot != null ? worldRoot.GetComponentsInChildren<GoblinCamp>(true).Length : 0);
+            int powerSiteCount = _generator != null && _generator.PowerSites != null
+                ? _generator.PowerSites.Count
+                : (worldRoot != null ? worldRoot.GetComponentsInChildren<PowerSite>(true).Length : 0);
 
             Debug.Log(
                 $"[WorldBootstrap] Player driver: {(builtWithInvector ? "Invector" : "WPG legacy")} | " +

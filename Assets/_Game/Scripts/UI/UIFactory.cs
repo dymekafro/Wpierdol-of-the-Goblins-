@@ -10,6 +10,7 @@ namespace WPG.UI
     {
         private static Font _font;
         private static Sprite _defaultSprite;
+        private static bool _defaultSpriteResolved;
 
         public static Font GetFont()
         {
@@ -25,8 +26,19 @@ namespace WPG.UI
 
         public static Sprite GetDefaultSprite()
         {
-            if (_defaultSprite != null) return _defaultSprite;
-            _defaultSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            if (_defaultSpriteResolved) return _defaultSprite;
+            _defaultSpriteResolved = true;
+
+            // Unity 6 usunął wbudowany "UI/Skin/UISprite.psd" — próba pobrania spamuje błędy.
+            // Próbujemy raz, a przy braku zostawiamy null (Image renderuje się wtedy jako czysty kolor/tint).
+            try
+            {
+                _defaultSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            }
+            catch
+            {
+                _defaultSprite = null;
+            }
             return _defaultSprite;
         }
 
