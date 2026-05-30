@@ -52,6 +52,7 @@
     <Analyzer Include="C:\Users\sledz\RPG ADVENTURE XD\Library\PackageCache\com.unity.dt.app-ui@8ac7e730dd5d\Runtime\MVVM\SourceGenerators\netstandard2.0\MVVMSourceGenerators.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterClassDefinition.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\AnimatorParameterMirror.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\PlayerController.cs" />
     <Compile Include="Assets\_Game\Scripts\World\GoldenHourLighting.cs" />
@@ -59,11 +60,13 @@
     <Compile Include="Assets\_Game\Scripts\World\WorldAssetPlacer.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\InvectorCameraScale.cs" />
     <Compile Include="Assets\_Game\Scripts\World\MaterialUpgrader.cs" />
+    <Compile Include="Assets\_Game\Scripts\Core\CharacterCreationSession.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\SettingsManager.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\3D Models\Others\HealthItem\vAnimateUV.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\Scripts\CharacterController\vThirdPersonMotor.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\Scripts\CharacterController\vThirdPersonInput.cs" />
     <Compile Include="Assets\_Game\Scripts\World\WorldGenerator.cs" />
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterClassDatabase.cs" />
     <Compile Include="Assets\_Game\Scripts\UI\PlayerHUD.cs" />
     <Compile Include="Assets\_Game\Scripts\Enemies\GoblinShamanElite.cs" />
     <Compile Include="Assets\_Game\Scripts\UI\FPSCounter.cs" />
@@ -73,6 +76,8 @@
     <Compile Include="Assets\_Game\Scripts\Enemies\GoblinCamp.cs" />
     <Compile Include="Assets\_Game\Scripts\UI\CharacterCreationBootstrap.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\Scripts\Generic\Utils\vComment.cs" />
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterAppearanceData.cs" />
+    <Compile Include="Assets\_Game\Scripts\UI\MainMenuNewGameRouter.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\SaveData.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\Scripts\Generic\Utils\vExtensions.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\PlayerBuilder.cs" />
@@ -80,7 +85,9 @@
     <Compile Include="Assets\_Game\Scripts\World\MaterialFactory.cs" />
     <Compile Include="Assets\_Game\Scripts\World\WorldBootstrap.cs" />
     <Compile Include="Assets\_Game\Scripts\World\ForestAtmosphereSettings.cs" />
+    <Compile Include="Assets\_Game\Scripts\UI\CharacterCreationUI.cs" />
     <Compile Include="Assets\_Game\Scripts\UI\UIFactory.cs" />
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterCreationRules.cs" />
     <Compile Include="Assets\_Game\Scripts\Enemies\GoblinArrow.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\SaveSystem.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\GameAssetPaths.cs" />
@@ -89,6 +96,7 @@
     <Compile Include="Assets\_Game\Scripts\Player\InvectorPlayerAdapter.cs" />
     <Compile Include="Assets\_Game\Scripts\World\InteractionDetector.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\PlayerCombat.cs" />
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterCreationEnums.cs" />
     <Compile Include="Assets\_Game\Scripts\World\DruidBase.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\_Game\Scripts\Enemies\GoblinStormtrooper.cs" />
@@ -101,12 +109,14 @@
     <Compile Include="Assets\_Game\Scripts\Player\ThirdPersonCamera.cs" />
     <Compile Include="Assets\_Game\Scripts\Enemies\Totem.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\PlayerStats.cs" />
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterStatsData.cs" />
     <Compile Include="Assets\_Game\Scripts\Player\InvectorPlayerBuilder.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\GameManager.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\GameAssetPacks.cs" />
     <Compile Include="Assets\_Game\Scripts\UI\DamageNumber.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\Scripts\Camera\vThirdPersonCamera.cs" />
     <Compile Include="Assets\_Game\Scripts\World\CampInteractable.cs" />
+    <Compile Include="Assets\_Game\Scripts\UI\CharacterPreviewController.cs" />
     <Compile Include="Assets\_Game\Scripts\UI\PauseMenu.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\IDamageReceiver.cs" />
     <Compile Include="Assets\_Game\Scripts\Enemies\GoblinBase.cs" />
@@ -115,6 +125,7 @@
     <Compile Include="Assets\_Game\Scripts\UI\MainMenuBootstrap.cs" />
     <Compile Include="Assets\Invector-3rdPersonController_LITE\Scripts\CharacterController\vThirdPersonController.cs" />
     <Compile Include="Assets\_Game\Scripts\Character\PlayerAttributes.cs" />
+    <Compile Include="Assets\_Game\Scripts\Character\CharacterCreationData.cs" />
     <Compile Include="Assets\_Game\Scripts\Core\GameState.cs" />
   </ItemGroup>
   <ItemGroup>
