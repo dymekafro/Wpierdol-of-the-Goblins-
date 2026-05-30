@@ -180,17 +180,17 @@ namespace WPG.Core
         // --- Muzyka (warstwy) — import usera do Assets/_Game/Audio/Music/ ---
         public static readonly string[] MusicSoundtrack =
         {
-            "Assets/_Game/Audio/Music/SOUNDTRACK.wav",
+            "Assets/_Game/Audio/Music/SOUNDTRACK.ogg",
         };
 
         public static readonly string[] MusicMenu =
         {
-            "Assets/_Game/Audio/Music/MENU.wav",
+            "Assets/_Game/Audio/Music/MENU.ogg",
         };
 
         public static readonly string[] MusicAmbient =
         {
-            "Assets/_Game/Audio/Music/AMBIENT.wav",
+            "Assets/_Game/Audio/Music/AMBIENT.ogg",
         };
 
         public const string ResMusicSoundtrack = "Audio/Music/SOUNDTRACK";
