@@ -100,6 +100,16 @@ namespace WPG.World
             var gm = GameManager.Instance;
             PlayerAttributes attrs = gm != null ? gm.attributes : PlayerAttributes.CreateDruidBase();
 
+            // Nowa gra z kreatora: przepisz atrybuty z wybranej klasy/statystyk.
+            // Przy "Kontynuuj" (isContinuing) zostawiamy atrybuty z save'a.
+            bool continuing = gm != null && gm.isContinuing;
+            if (!continuing && CharacterCreationSession.HasCharacter)
+            {
+                attrs = PlayerAttributes.FromCreatedCharacter(CharacterCreationSession.CurrentCharacter);
+                if (gm != null)
+                    gm.attributes = attrs;
+            }
+
             Vector3 spawn = ResolveSpawnPoint(worldRoot);
             int? hp = null;
             int? mana = null;

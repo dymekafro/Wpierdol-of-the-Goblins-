@@ -29,6 +29,30 @@ namespace WPG.Character
             };
         }
 
+        /// <summary>
+        /// Buduje atrybuty rozgrywki na podstawie postaci z kreatora.
+        /// Mapowanie: STR/DEX/INT/END/CHA 1:1, mana = inteligencja (proxy puli many).
+        /// Percepcja z kreatora nie ma jeszcze odpowiednika w PlayerAttributes — patrz audyt.
+        /// </summary>
+        public static PlayerAttributes FromCreatedCharacter(CharacterCreationData data)
+        {
+            if (data == null || data.finalStats == null)
+                return CreateDruidBase();
+
+            CharacterStatsData s = data.finalStats;
+
+            return new PlayerAttributes
+            {
+                strength = s.strength,
+                dexterity = s.dexterity,
+                intelligence = s.intelligence,
+                mana = s.intelligence,
+                endurance = s.endurance,
+                charisma = s.charisma,
+                unallocatedPoints = data.remainingStatPoints < 0 ? 0 : data.remainingStatPoints
+            };
+        }
+
         public int MaxHealth => 50 + endurance * 10;
         public int MaxMana => 20 + mana * 10;
         public float ManaRegenPerSecond => 1f + mana * 0.3f;

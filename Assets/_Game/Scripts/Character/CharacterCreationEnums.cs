@@ -8,7 +8,12 @@ public enum CharacterClassType
     Archer,
     Rogue,
     Dwarf,
-    Wanderer
+    Wanderer,
+    // Dopisane na końcu, aby nie psuć istniejących zserializowanych wartości.
+    Barbarian,
+    Ranger,
+    Knight,
+    Druid
 }
 
 public enum BodyType

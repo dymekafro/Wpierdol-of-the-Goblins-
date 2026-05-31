@@ -1920,6 +1920,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterClassPlayerSpawner
   existingPlayerName: Player_Invector
   destroyExistingPlayer: 1
+  classPrefabs:
+  - classType: 1
+    prefab: {fileID: 1595958825514532351, guid: b19583326789ffe4ca85a4e3ccb25c0d, type: 3}
+  - classType: 5
+    prefab: {fileID: 1595958825514532351, guid: 52282afe865c0cf47b9dd3880467be33, type: 3}
+  - classType: 7
+    prefab: {fileID: 3704036666234475706, guid: 2b09904d71abb4ab793aa79e681191ce, type: 3}
+  - classType: 8
+    prefab: {fileID: 378969575744630742, guid: 6af3b8b9da77c4714bbd0f9b0fd7b628, type: 3}
+  - classType: 3
+    prefab: {fileID: 378969575744630742, guid: 6af3b8b9da77c4714bbd0f9b0fd7b628, type: 3}
+  - classType: 6
+    prefab: {fileID: 378969575744630742, guid: 6af3b8b9da77c4714bbd0f9b0fd7b628, type: 3}
+  - classType: 9
+    prefab: {fileID: 3994997457467674347, guid: 12b3cd800a7d74cabbeff36cb91ee14f, type: 3}
+  - classType: 4
+    prefab: {fileID: 3994997457467674347, guid: 12b3cd800a7d74cabbeff36cb91ee14f, type: 3}
+  - classType: 10
+    prefab: {fileID: 1070548082635227685, guid: d31800abc3f244ecfac35b5fda929700, type: 3}
+  - classType: 2
+    prefab: {fileID: 1070548082635227685, guid: d31800abc3f244ecfac35b5fda929700, type: 3}
   warriorPrefab: {fileID: 1595958825514532351, guid: b19583326789ffe4ca85a4e3ccb25c0d, type: 3}
   dwarfPrefab: {fileID: 1595958825514532351, guid: 52282afe865c0cf47b9dd3880467be33, type: 3}
   spawnPoint: {fileID: 0}
@@ -1935,7 +1956,7 @@ Transform:
   m_GameObject: {fileID: 1434906831}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 39.60581, y: -3.5192, z: -4.2919}
+  m_LocalPosition: {x: 39.60581, y: 0.03, z: -4.2919}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
