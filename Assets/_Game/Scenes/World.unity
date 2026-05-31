@@ -167,6 +167,10 @@ MonoBehaviour:
   worldRootName: WorldRoot
   generateWorldIfMissing: 1
   playerSpawnName: PlayerSpawn
+  terrainHeightAmplitude: 2.7
+  terrainNoiseScale: 67
+  terrainBaseFlatRadius: 12.4
+  terrainMeshResolution: 160
 --- !u!1 &126050319 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 363476541735228953, guid: 565ac7e383ef690439551780465c1431, type: 3}
